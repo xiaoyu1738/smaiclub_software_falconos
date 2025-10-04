@@ -1,8 +1,6 @@
 import os
 import time
 import random
-
-# <--- MODIFIED: 导入 sys 和 subprocess 用于自更新
 import sys
 import subprocess
 
@@ -22,7 +20,7 @@ h4 = "[时间]>>>>> "
 h5_deepseek = f"{Fore.BLUE}AI(DeepSeek)>>>>>> {Style.RESET_ALL}"
 
 # --- 全局变量 ---
-CURRENT_VERSION = "2.0.0"
+CURRENT_VERSION = "2.0.0"  # 当前版本号
 current_proxy = "无"
 deepseek_api_key = None
 gemini_api_key = None
@@ -33,23 +31,55 @@ security_questions = None
 def load_all_data():
     """加载所有加密数据，包括API密钥和用户凭证。"""
     global deepseek_api_key, gemini_api_key, user_password, security_questions
-    deepseek_api_key = FALCON_jd.load_api_keys()
+    deepseek_api_key, gemini_api_key = FALCON_jd.load_api_keys()
     user_password, security_questions = FALCON_jd.load_credentials()
 
 
-# <--- MODIFIED SECTION START: 实现了全自动更新逻辑 ---
+# <--- MODIFIED SECTION START: 重构了更新逻辑 ---
+
+def get_latest_version_info():
+    """
+    <--- NEW
+    从 GitHub 获取最新版本信息。
+    :return: (状态, 版本字符串, release数据)
+    状态可以是: 'update_available', 'up_to_date', 'error'
+    """
+    repo_owner = "xiaoyu1738"  # <--- !!! 务必修改这里 !!!
+    repo_name = "smaiclub_software_falconos"  # <--- !!! 务必修改这里，如果你的仓库名不同 !!!
+
+    api_url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/releases/latest"
+
+    try:
+        response = requests.get(api_url, timeout=5)
+        response.raise_for_status()
+        latest_release_data = response.json()
+        latest_tag = latest_release_data.get("tag_name")
+
+        if not latest_tag:
+            return 'error', "无法获取Tag", None
+
+        latest_version_str = latest_tag.lstrip('v')
+        current_version_tuple = tuple(map(int, CURRENT_VERSION.split('.')))
+        latest_version_tuple = tuple(map(int, latest_version_str.split('.')))
+
+        if latest_version_tuple > current_version_tuple:
+            return 'update_available', latest_version_str, latest_release_data
+        else:
+            return 'up_to_date', CURRENT_VERSION, None
+
+    except requests.exceptions.RequestException:
+        return 'error', "网络请求失败", None
+    except Exception:
+        return 'error', "解析版本信息失败", None
+
 
 def apply_update_and_restart(new_exe_path):
-    """创建并执行一个批处理脚本来替换旧文件并重启程序。"""
-    # 只有在 Windows 系统下才执行此操作
+    """创建并执行批处理脚本以替换旧文件并重启。"""
     if os.name != 'nt':
         print(f"{h2}{Fore.YELLOW}自动更新仅支持 Windows。请手动替换文件。{Style.RESET_ALL}")
         return
 
-    # 获取当前正在运行的 .exe 的路径
     current_exe_path = sys.executable
-
-    # 创建批处理脚本内容
     batch_script_content = f"""
 @echo off
 echo Updating FALCONOS... Please wait.
@@ -60,31 +90,41 @@ start "" "{new_exe_path}"
 (goto) 2>nul & del "%~f0"
 """
 
-    # 将脚本写入临时文件
     updater_script_path = os.path.join(os.getcwd(), "updater.bat")
     with open(updater_script_path, "w") as f:
         f.write(batch_script_content)
 
-    # 启动批处理脚本并立即退出当前程序
     subprocess.Popen(updater_script_path, shell=True, creationflags=subprocess.CREATE_NEW_CONSOLE)
     sys.exit()
 
 
-def download_update(url, filename):
-    """使用进度条下载更新的 .exe 文件, 成功后应用更新。"""
+def download_update(release_data):
+    """下载并应用更新。"""
+    assets = release_data.get("assets", [])
+    download_asset = None
+    for asset in assets:
+        if asset.get("name", "").lower() == "falconos.exe":
+            download_asset = asset
+            break
+
+    if not download_asset:
+        print(f"{h2}{Fore.RED}错误: 在 Release 中未找到 'FALCONOS.exe' 文件。{Style.RESET_ALL}")
+        return
+
+    download_url = download_asset.get("browser_download_url")
+    latest_version_str = release_data.get("tag_name", "new").lstrip('v')
+    new_filename = f"FALCONOS_v{latest_version_str}.exe"
+
     try:
-        print(f"{h2}准备下载: {filename}...")
-        response = requests.get(url, stream=True, timeout=10)
+        print(f"{h2}准备下载: {new_filename}...")
+        response = requests.get(download_url, stream=True, timeout=10)
         response.raise_for_status()
 
         total_size = int(response.headers.get('content-length', 0))
 
-        with open(filename, 'wb') as f, tqdm(
-                desc=f"Downloading {filename}",
-                total=total_size,
-                unit='B',
-                unit_scale=True,
-                unit_divisor=1024,
+        with open(new_filename, 'wb') as f, tqdm(
+                desc=f"Downloading {new_filename}", total=total_size, unit='B',
+                unit_scale=True, unit_divisor=1024,
                 bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}]"
         ) as progress_bar:
             for chunk in response.iter_content(chunk_size=1024):
@@ -94,81 +134,44 @@ def download_update(url, filename):
         print(f"\n{h2}{Fore.GREEN}下载完成！准备应用更新...{Style.RESET_ALL}")
         print(f"{h2}{Fore.YELLOW}程序将自动关闭，并启动新版本。{Style.RESET_ALL}")
         time.sleep(2)
+        apply_update_and_restart(os.path.abspath(new_filename))
 
-        # 下载成功后，调用更新重启函数
-        apply_update_and_restart(os.path.abspath(filename))
-
-    except requests.exceptions.RequestException as e:
-        print(f"\n{h2}{Fore.RED}下载失败: 网络错误。 {e}{Style.RESET_ALL}")
     except Exception as e:
-        print(f"\n{h2}{Fore.RED}下载过程中发生未知错误: {e}{Style.RESET_ALL}")
+        print(f"\n{h2}{Fore.RED}下载过程中发生错误: {e}{Style.RESET_ALL}")
+        input(f"\n{h3}按 Enter 键继续...")
 
-    input(f"\n{h3}按 Enter 键继续...")
 
-
-def check_for_updates():
-    """通过GitHub API检查并提示下载新版本 .exe。"""
-    repo_owner = "xiaoyu1738"  # <--- !!! 务必修改这里 !!!
-    repo_name = "smaiclub_software_falconos"  # <--- !!! 务必修改这里，如果你的仓库名不同 !!!
-
-    api_url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/releases/latest"
-
-    try:
-        response = requests.get(api_url, timeout=5)
-        response.raise_for_status()
-
-        latest_release_data = response.json()
-        latest_tag = latest_release_data.get("tag_name")
-
-        if not latest_tag:
-            return
-
-        latest_version_str = latest_tag.lstrip('v')
-
-        current_version_tuple = tuple(map(int, CURRENT_VERSION.split('.')))
-        latest_version_tuple = tuple(map(int, latest_version_str.split('.')))
-
-        if latest_version_tuple > current_version_tuple:
-            print("\n================================================================================")
-            print(f"{h2}{Fore.YELLOW}发现新版本！{Style.RESET_ALL}")
-            print(f"{h2}当前版本: {CURRENT_VERSION}, 最新版本: {latest_version_str}")
-
-            assets = latest_release_data.get("assets", [])
-            download_asset = None
-            for asset in assets:
-                if asset.get("name", "").lower() == "falconos.exe":  # 使用 .lower() 增加兼容性
-                    download_asset = asset
-                    break
-
-            if download_asset:
-                download_url = download_asset.get("browser_download_url")
-                new_filename = f"FALCONOS_v{latest_version_str}.exe"
-                size_in_mb = round(download_asset.get("size", 0) / (1024 * 1024), 2)
-
-                print(f"{h2}发现更新程序: {download_asset.get('name')} ({size_in_mb} MB)")
-                choice = input(f"{h3}是否立即下载并自动更新？ (y/n): ").lower()
-                if choice == 'y':
-                    download_update(download_url, new_filename)
-                else:
-                    print(f"{h2}已取消更新。")
-            else:
-                print(f"{h2}未在 Release 中找到 'FALCONOS.exe'。请前往以下地址手动更新:")
-                print(f"{h2}{Fore.CYAN}{latest_release_data.get('html_url')}{Style.RESET_ALL}")
-
-            print("================================================================================")
-            time.sleep(2)
-
-    except requests.exceptions.RequestException:
-        pass
-    except Exception:
-        pass
+def check_for_updates_automatic():
+    """ <--- MODIFIED: 这是用于自动检查的函数 """
+    status, version_str, release_data = get_latest_version_info()
+    if status == 'update_available':
+        print("\n================================================================================")
+        print(f"{h2}{Fore.YELLOW}发现新版本！{Style.RESET_ALL}")
+        print(f"{h2}当前版本: {CURRENT_VERSION}, 最新版本: {version_str}")
+        choice = input(f"{h3}是否立即下载并自动更新？ (y/n): ").lower()
+        if choice == 'y':
+            download_update(release_data)
+        else:
+            print(f"{h2}已取消更新。")
+        print("================================================================================")
+        time.sleep(2)
 
 
 # <--- MODIFIED SECTION END ---
 
 
 def start1():
-    # ... (此函数及以下所有代码均未改动)
+    # ... (此函数及以下代码无改动)
+    active_password = user_password if user_password else "114514"
+    password_num = 3
+    # ...
+    # (省略了 start1, start2 的未修改部分以节省空间, 完整代码在下面)
+    # ...
+
+
+# (这里是完整的、包含所有修改的最终代码)
+def start1():
+    """处理用户登录、密码验证和找回密码的逻辑。"""
     active_password = user_password if user_password else "114514"
     password_num = 3
 
@@ -394,8 +397,32 @@ RC4 ------- RC4加解密
 smaiclub -- 打开SMAICLUB官网
 setapikey - 设置AI模型的API密钥
 setpassword 设置或更改您的软件密钥并添加密码找回功能
-                '''
+update ---- 手动检查并更新软件版本
+                '''  # <--- MODIFIED: 添加了 update 命令
             )
+
+        # <--- NEW: 新增的 update 命令处理逻辑 ---
+        elif cmd1 == "update":
+            print(f"{h2}正在检查更新，请稍候...")
+            status, version_str, release_data = get_latest_version_info()
+
+            if status == 'update_available':
+                print(f"{h2}{Fore.YELLOW}发现新版本！{Style.RESET_ALL}")
+                print(f"{h2}当前版本: {CURRENT_VERSION}")
+                print(f"{h2}最新版本: {version_str}")
+                choice = input(f"{h3}是否立即下载并自动更新？ (y/n): ").lower()
+                if choice == 'y':
+                    download_update(release_data)
+                else:
+                    print(f"{h2}已取消更新。")
+
+            elif status == 'up_to_date':
+                print(f"{h2}{Fore.GREEN}恭喜！您的软件已是最新版本。{Style.RESET_ALL}")
+                print(f"{h2}当前版本: {version_str}")
+
+            elif status == 'error':
+                print(f"{h2}{Fore.RED}检查更新失败: {version_str}。{Style.RESET_ALL}")
+                print(f"{h2}请检查您的网络连接或稍后再试。")
 
         elif cmd1 == "setpassword":
             global user_password, security_questions
@@ -638,6 +665,6 @@ setpassword 设置或更改您的软件密钥并添加密码找回功能
 # --- 程序主入口 ---
 load_all_data()
 start1()
-check_for_updates()
+check_for_updates_automatic()  # <--- MODIFIED: 调用自动检查函数
 start2()
 command1()

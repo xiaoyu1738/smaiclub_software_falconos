@@ -73,6 +73,7 @@ python FALCON.py
   ```
   [命令行]>>>>> setpassword
   ```
+
 * **配置 API 密钥：** 使用 `setapikey` 命令安全地保存您的 DeepSeek 和 Gemini API 密钥。
   
   ```
@@ -98,6 +99,7 @@ python FALCON.py
 | `smaiclub`    | 在默认浏览器中打开 SMAICLUB 官网。                    |
 | `setapikey`   | 加密设置或更新您的 AI 模型 API 密钥。                   |
 | `setpassword` | 修改您的软件登录密钥，并设置/更新密保问题以启用密码重置功能。           |
+| ```update```  | 手动检查软件版本是否有新的更新                           |
 
 ## 🔒 安全说明
 
