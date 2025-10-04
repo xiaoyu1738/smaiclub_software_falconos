@@ -20,7 +20,7 @@ h4 = "[时间]>>>>> "
 h5_deepseek = f"{Fore.BLUE}AI(DeepSeek)>>>>>> {Style.RESET_ALL}"
 
 # --- 全局变量 ---
-CURRENT_VERSION = "2.0.0"  # 当前版本号
+CURRENT_VERSION = "2.1.0"  # 当前版本号
 current_proxy = "无"
 deepseek_api_key = None
 gemini_api_key = None
