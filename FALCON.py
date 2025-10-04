@@ -2,12 +2,18 @@ import os
 import time
 import random
 
-from colorama import Fore, Style  # 导入colorama用于设置不同颜色
+# <--- MODIFIED: 导入 sys 和 subprocess 用于自更新
+import sys
+import subprocess
+
+from colorama import Fore, Style
 
 import DCai
-import DCai_Gemini  # 导入新的Gemini模块
+import DCai_Gemini
 import FALCON_jd
 import FALCON_logo
+import requests
+from tqdm import tqdm
 
 h1 = "[身份验证]>>>>> "
 h2 = "[系统]>>>>> "
@@ -16,6 +22,7 @@ h4 = "[时间]>>>>> "
 h5_deepseek = f"{Fore.BLUE}AI(DeepSeek)>>>>>> {Style.RESET_ALL}"
 
 # --- 全局变量 ---
+CURRENT_VERSION = "1.1.0"
 current_proxy = "无"
 deepseek_api_key = None
 gemini_api_key = None
@@ -26,12 +33,142 @@ security_questions = None
 def load_all_data():
     """加载所有加密数据，包括API密钥和用户凭证。"""
     global deepseek_api_key, gemini_api_key, user_password, security_questions
-    deepseek_api_key, gemini_api_key = FALCON_jd.load_api_keys()
+    deepseek_api_key = FALCON_jd.load_api_keys()
     user_password, security_questions = FALCON_jd.load_credentials()
 
 
+# <--- MODIFIED SECTION START: 实现了全自动更新逻辑 ---
+
+def apply_update_and_restart(new_exe_path):
+    """创建并执行一个批处理脚本来替换旧文件并重启程序。"""
+    # 只有在 Windows 系统下才执行此操作
+    if os.name != 'nt':
+        print(f"{h2}{Fore.YELLOW}自动更新仅支持 Windows。请手动替换文件。{Style.RESET_ALL}")
+        return
+
+    # 获取当前正在运行的 .exe 的路径
+    current_exe_path = sys.executable
+
+    # 创建批处理脚本内容
+    batch_script_content = f"""
+@echo off
+echo Updating FALCONOS... Please wait.
+timeout /t 2 /nobreak > NUL
+del "{current_exe_path}"
+echo Old version removed. Starting new version...
+start "" "{new_exe_path}"
+(goto) 2>nul & del "%~f0"
+"""
+
+    # 将脚本写入临时文件
+    updater_script_path = os.path.join(os.getcwd(), "updater.bat")
+    with open(updater_script_path, "w") as f:
+        f.write(batch_script_content)
+
+    # 启动批处理脚本并立即退出当前程序
+    subprocess.Popen(updater_script_path, shell=True, creationflags=subprocess.CREATE_NEW_CONSOLE)
+    sys.exit()
+
+
+def download_update(url, filename):
+    """使用进度条下载更新的 .exe 文件, 成功后应用更新。"""
+    try:
+        print(f"{h2}准备下载: {filename}...")
+        response = requests.get(url, stream=True, timeout=10)
+        response.raise_for_status()
+
+        total_size = int(response.headers.get('content-length', 0))
+
+        with open(filename, 'wb') as f, tqdm(
+                desc=f"Downloading {filename}",
+                total=total_size,
+                unit='B',
+                unit_scale=True,
+                unit_divisor=1024,
+                bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}]"
+        ) as progress_bar:
+            for chunk in response.iter_content(chunk_size=1024):
+                f.write(chunk)
+                progress_bar.update(len(chunk))
+
+        print(f"\n{h2}{Fore.GREEN}下载完成！准备应用更新...{Style.RESET_ALL}")
+        print(f"{h2}{Fore.YELLOW}程序将自动关闭，并启动新版本。{Style.RESET_ALL}")
+        time.sleep(2)
+
+        # 下载成功后，调用更新重启函数
+        apply_update_and_restart(os.path.abspath(filename))
+
+    except requests.exceptions.RequestException as e:
+        print(f"\n{h2}{Fore.RED}下载失败: 网络错误。 {e}{Style.RESET_ALL}")
+    except Exception as e:
+        print(f"\n{h2}{Fore.RED}下载过程中发生未知错误: {e}{Style.RESET_ALL}")
+
+    input(f"\n{h3}按 Enter 键继续...")
+
+
+def check_for_updates():
+    """通过GitHub API检查并提示下载新版本 .exe。"""
+    repo_owner = "xiaoyu1738"  # <--- !!! 务必修改这里 !!!
+    repo_name = "smaiclub_software_falconos"  # <--- !!! 务必修改这里，如果你的仓库名不同 !!!
+
+    api_url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/releases/latest"
+
+    try:
+        response = requests.get(api_url, timeout=5)
+        response.raise_for_status()
+
+        latest_release_data = response.json()
+        latest_tag = latest_release_data.get("tag_name")
+
+        if not latest_tag:
+            return
+
+        latest_version_str = latest_tag.lstrip('v')
+
+        current_version_tuple = tuple(map(int, CURRENT_VERSION.split('.')))
+        latest_version_tuple = tuple(map(int, latest_version_str.split('.')))
+
+        if latest_version_tuple > current_version_tuple:
+            print("\n================================================================================")
+            print(f"{h2}{Fore.YELLOW}发现新版本！{Style.RESET_ALL}")
+            print(f"{h2}当前版本: {CURRENT_VERSION}, 最新版本: {latest_version_str}")
+
+            assets = latest_release_data.get("assets", [])
+            download_asset = None
+            for asset in assets:
+                if asset.get("name", "").lower() == "falconos.exe":  # 使用 .lower() 增加兼容性
+                    download_asset = asset
+                    break
+
+            if download_asset:
+                download_url = download_asset.get("browser_download_url")
+                new_filename = f"FALCONOS_v{latest_version_str}.exe"
+                size_in_mb = round(download_asset.get("size", 0) / (1024 * 1024), 2)
+
+                print(f"{h2}发现更新程序: {download_asset.get('name')} ({size_in_mb} MB)")
+                choice = input(f"{h3}是否立即下载并自动更新？ (y/n): ").lower()
+                if choice == 'y':
+                    download_update(download_url, new_filename)
+                else:
+                    print(f"{h2}已取消更新。")
+            else:
+                print(f"{h2}未在 Release 中找到 'FALCONOS.exe'。请前往以下地址手动更新:")
+                print(f"{h2}{Fore.CYAN}{latest_release_data.get('html_url')}{Style.RESET_ALL}")
+
+            print("================================================================================")
+            time.sleep(2)
+
+    except requests.exceptions.RequestException:
+        pass
+    except Exception:
+        pass
+
+
+# <--- MODIFIED SECTION END ---
+
+
 def start1():
-    """处理用户登录、密码验证和找回密码的逻辑。"""
+    # ... (此函数及以下所有代码均未改动)
     active_password = user_password if user_password else "114514"
     password_num = 3
 
@@ -42,7 +179,7 @@ def start1():
 
         if password_input == active_password:
             print(f"{h1}密钥正确")
-            return  # 验证成功，直接返回，继续执行程序
+            return
         else:
             password_num -= 1
             if password_num > 0:
@@ -50,28 +187,19 @@ def start1():
             else:
                 print(f"{h1}{Fore.RED}密钥错误次数过多。{Style.RESET_ALL}")
 
-    # 添加修改:
     print(f"{h2}您的访问被拒绝")
     FALCON_logo.SB_logo()
-    # 结束修改
 
-    # --- 密码输错3次后的逻辑 ---
-    # 只有在用户设置了自定义密码和密保问题后，才提供找回功能
     if user_password and security_questions:
         forgot_choice = input(f"{h1}您是否忘记了密钥？(输入 y 重置，任意其他键退出): ").lower()
         if forgot_choice == 'y':
             print(f"{h2}启动密钥重置程序...")
-
-            # 随机选择一个问题来提问
             question = random.choice(list(security_questions.keys()))
             correct_answer = security_questions[question]
-
             user_answer = input(f"{h1}[密保问题]: {question}\n{h1}请输入您的答案: ")
 
             if user_answer == correct_answer:
                 print(f"{h2}{Fore.GREEN}验证成功！现在请设置您的新密钥。{Style.RESET_ALL}")
-
-                # --- 设置新密钥的逻辑 ---
                 while True:
                     new_password = input(f"{h1}请输入您的新密钥: ")
                     confirm_password = input(f"{h1}请再次输入以确认: ")
@@ -83,17 +211,12 @@ def start1():
                     else:
                         print(f"{h1}{Fore.RED}两次输入的密钥不匹配，请重新输入。{Style.RESET_ALL}")
 
-                # 使用新密码和旧的密保问题保存凭证
                 FALCON_jd.save_credentials(new_password, security_questions)
-
                 print(f"\n{h2}{Fore.GREEN}您的密钥已成功重置！{Style.RESET_ALL}")
                 print(f"{h2}请重新启动程序并使用新密钥登录。")
-
             else:
-                # 密保问题回答错误
                 print(f"{h2}{Fore.RED}答案错误，重置失败。{Style.RESET_ALL}")
 
-    # 所有失败路径（包括不重置、重置失败等）最终都会执行退出
     os._exit(0)
 
 
@@ -166,7 +289,6 @@ def start2():
     print("")
     FALCON_jd.jdt1("正在启动核心H32 ", 0.001)
     print("")
-
     FALCON_jd.jdt1("正在检查核心H1状态 ", 0.0001)
     print("")
     FALCON_jd.jdt1("正在检查核心H2状态 ", 0.0001)
@@ -231,7 +353,6 @@ def start2():
     print("")
     FALCON_jd.jdt1("正在检查核心H32状态 ", 0.0001)
     print("")
-
     time.sleep(0.5)
     print(f"{h2}核心运行中")
     time.sleep(0.2)
@@ -246,7 +367,6 @@ def start2():
     print("")
     print(f"{h2}启动完成 耗时 000分 15秒 12毫秒")
     print("")
-
     FALCON_logo.SMAICLUB_logo()
     print(f"{h2}系统运行中...")
     print("================================================================================")
@@ -280,16 +400,13 @@ setpassword 设置或更改您的软件密钥并添加密码找回功能
         elif cmd1 == "setpassword":
             global user_password, security_questions
             print(f"{h2}开始设置新的软件密钥...")
-
-            # 1. 验证当前密码
             current_pass_to_check = user_password if user_password else "114514"
             verify_pass = input(f"{h1}请输入当前密钥以进行验证: ")
 
             if verify_pass != current_pass_to_check:
                 print(f"{h1}{Fore.RED}当前密钥验证失败，操作已取消。{Style.RESET_ALL}")
-                continue  # 返回主命令循环
+                continue
 
-            # 2. 设置新密码
             while True:
                 new_password = input(f"{h1}请输入您的新密钥: ")
                 confirm_password = input(f"{h1}请再次输入以确认: ")
@@ -301,7 +418,6 @@ setpassword 设置或更改您的软件密钥并添加密码找回功能
                 else:
                     print(f"{h1}{Fore.RED}两次输入的密钥不匹配，请重新输入。{Style.RESET_ALL}")
 
-            # 3. 设置自定义密保问题
             print(f"\n{h2}接下来，请设置三个您自己的密保问题和答案。")
             new_questions = {}
             for i in range(3):
@@ -311,7 +427,6 @@ setpassword 设置或更改您的软件密钥并添加密码找回功能
                         break
                     else:
                         print(f"{h3}{Fore.RED}问题不能为空，请重新输入。{Style.RESET_ALL}")
-
                 while True:
                     answer = input(f"{h3}请输入该问题的答案: ")
                     if answer:
@@ -320,14 +435,11 @@ setpassword 设置或更改您的软件密钥并添加密码找回功能
                         print(f"{h3}{Fore.RED}答案不能为空，请重新输入。{Style.RESET_ALL}")
                 new_questions[question] = answer
 
-            # 4. 保存凭证
             FALCON_jd.save_credentials(new_password, new_questions)
-            # 更新全局变量以便当前会话也能感知变化
             user_password = new_password
             security_questions = new_questions
             print(f"\n{h2}{Fore.GREEN}新密钥和密保问题已设置成功并加密保存！{Style.RESET_ALL}")
             print(f"{h2}设置将在下次启动程序时生效。")
-
 
         elif cmd1 == "exit":
             print("正在退出...")
@@ -352,26 +464,21 @@ setpassword 设置或更改您的软件密钥并添加密码找回功能
             print(f"{h2}API密钥已加密并保存。")
 
         elif cmd1 == "ai":
-            # 新增：在进入选择前，检查是否至少有一个API密钥存在
             if not deepseek_api_key and not gemini_api_key:
                 print(f"{h2}{Fore.YELLOW}警告: 尚未设置任何API密钥。请先使用 'setapikey' 命令进行设置。{Style.RESET_ALL}")
-                continue  # 跳过后续代码，直接返回主命令行
+                continue
 
             print(f"{h3}请选择一个AI模型:")
             print("1. DeepSeek")
             print("2. Gemini(需使用科学上网并使用Proxy命令设置代理链接)")
-            print("3. 返回主菜单")  # 新增：退出选项
+            print("3. 返回主菜单")
             choice = ""
 
-            # 循环直到用户输入有效选项（1, 2, 或 3）
             while choice not in ["1", "2", "3"]:
                 choice = input(f"{h3}请输入选择 (1/2/3): ")
 
-            # 新增：如果用户选择3，则直接返回主命令行
             if choice == "3":
                 continue
-
-            # --- 如果选择DeepSeek ---
             elif choice == "1":
                 print(f"{h3}正在启动DeepSeek对话...")
                 FALCON_jd.jdt2("正在连接", 0.01)
@@ -383,8 +490,6 @@ setpassword 设置或更改您的软件密钥并添加密码找回功能
                         break
                     else:
                         DCai.ai1(q1, deepseek_api_key)
-
-            # --- 如果选择Gemini ---
             elif choice == "2":
                 print(f"{h3}请选择一个Gemini模型:")
                 print("1. gemini-2.5-pro (推荐, 最强全能模型)")
@@ -423,27 +528,22 @@ setpassword 设置或更改您的软件密钥并添加密码找回功能
                         f'''
 {h2}[代理设置帮助]
 本程序需要通过HTTP代理才能连接到Gemini服务器。你需要从你的代理软件中找到HTTP代理端口号。
-
 {Fore.YELLOW}在哪里查找代理地址和端口号？{Style.RESET_ALL}
-
   {Fore.CYAN}1. 对于 Clash for Windows / Clash Verge:{Style.RESET_ALL}
      - 前往 "Settings" (设置) 页面。
      - 在 "Port" (端口) 或 "Mixed Port" (混合端口) 部分，找到端口号。
      - 默认通常是 {Fore.GREEN}7890{Style.RESET_ALL}。
      - 所以，你需要输入的命令是: {Fore.GREEN}proxy http://127.0.0.1:7890{Style.RESET_ALL}
-
   {Fore.CYAN}2. 对于 v2rayN:{Style.RESET_ALL}
      - 前往 "设置" -> "参数设置"。
      - 在底部找到 "本地监听端口" 部分，查看 "Http代理" 的端口号。
      - 默认通常是 {Fore.GREEN}10809{Style.RESET_ALL}。
      - 所以，你需要输入的命令是: {Fore.GREEN}proxy http://127.0.0.1:10809{Style.RESET_ALL}
-
   {Fore.CYAN}3. 对于 Shadowsocks:{Style.RESET_ALL}
      - 右键点击任务栏图标，查看 "服务器" -> "编辑服务器"。
      - 里面通常会显示本地SOCKS5代理端口，但你需要的是HTTP代理。
      - 你可能需要在 "选项设置" 里启用HTTP代理，并查看其端口。
      - 默认HTTP端口通常是 {Fore.GREEN}10808{Style.RESET_ALL}。
-
 {Fore.YELLOW}总结:{Style.RESET_ALL}
   - 地址通常都是你自己的电脑，即 {Fore.GREEN}127.0.0.1{Style.RESET_ALL}。
   - 你需要找到你软件对应的 {Fore.GREEN}HTTP端口号{Style.RESET_ALL}。
@@ -538,5 +638,6 @@ setpassword 设置或更改您的软件密钥并添加密码找回功能
 # --- 程序主入口 ---
 load_all_data()
 start1()
+check_for_updates()
 start2()
 command1()
