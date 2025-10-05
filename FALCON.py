@@ -20,7 +20,7 @@ h4 = "[时间]>>>>> "
 h5_deepseek = f"{Fore.BLUE}AI(DeepSeek)>>>>>> {Style.RESET_ALL}"
 
 # --- 全局变量 ---
-CURRENT_VERSION = "2.1.0"  # 当前版本号
+CURRENT_VERSION = "1.0.0"
 current_proxy = "无"
 deepseek_api_key = None
 gemini_api_key = None
@@ -35,17 +35,10 @@ def load_all_data():
     user_password, security_questions = FALCON_jd.load_credentials()
 
 
-# <--- MODIFIED SECTION START: 重构了更新逻辑 ---
-
 def get_latest_version_info():
-    """
-    <--- NEW
-    从 GitHub 获取最新版本信息。
-    :return: (状态, 版本字符串, release数据)
-    状态可以是: 'update_available', 'up_to_date', 'error'
-    """
-    repo_owner = "xiaoyu1738"  # <--- !!! 务必修改这里 !!!
-    repo_name = "smaiclub_software_falconos"  # <--- !!! 务必修改这里，如果你的仓库名不同 !!!
+    """从 GitHub 获取最新版本信息。"""
+    repo_owner = "xiaoyu1738"
+    repo_name = "smaiclub_software_falconos"
 
     api_url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/releases/latest"
 
@@ -142,7 +135,7 @@ def download_update(release_data):
 
 
 def check_for_updates_automatic():
-    """ <--- MODIFIED: 这是用于自动检查的函数 """
+    """用于自动检查的函数。"""
     status, version_str, release_data = get_latest_version_info()
     if status == 'update_available':
         print("\n================================================================================")
@@ -157,19 +150,6 @@ def check_for_updates_automatic():
         time.sleep(2)
 
 
-# <--- MODIFIED SECTION END ---
-
-
-def start1():
-    # ... (此函数及以下代码无改动)
-    active_password = user_password if user_password else "114514"
-    password_num = 3
-    # ...
-    # (省略了 start1, start2 的未修改部分以节省空间, 完整代码在下面)
-    # ...
-
-
-# (这里是完整的、包含所有修改的最终代码)
 def start1():
     """处理用户登录、密码验证和找回密码的逻辑。"""
     active_password = user_password if user_password else "114514"
@@ -398,10 +378,9 @@ smaiclub -- 打开SMAICLUB官网
 setapikey - 设置AI模型的API密钥
 setpassword 设置或更改您的软件密钥并添加密码找回功能
 update ---- 手动检查并更新软件版本
-                '''  # <--- MODIFIED: 添加了 update 命令
+                '''
             )
 
-        # <--- NEW: 新增的 update 命令处理逻辑 ---
         elif cmd1 == "update":
             print(f"{h2}正在检查更新，请稍候...")
             status, version_str, release_data = get_latest_version_info()
@@ -480,15 +459,23 @@ update ---- 手动检查并更新软件版本
             print("核心状态正常")
             print("系统运行正常")
 
+        # <--- MODIFIED SECTION START ---
         elif cmd1 == "setapikey":
             global deepseek_api_key, gemini_api_key
             print(f"{h2}开始设置API密钥...")
-            new_deepseek_key = input(f"{h3}请输入DeepSeek API密钥: ")
-            new_gemini_key = input(f"{h3}请输入Gemini API密钥: ")
+
+            new_deepseek_key = input(f"{h3}请输入DeepSeek API密钥 (直接回车可跳过): ")
+            new_gemini_key = input(f"{h3}请输入Gemini API密钥 (直接回车可跳过): ")
+
+            if not new_deepseek_key and not new_gemini_key:
+                print(f"{h2}{Fore.YELLOW}您没有输入任何密钥，API密钥设置保持不变。{Style.RESET_ALL}")
+                continue
+
             FALCON_jd.save_api_keys(new_deepseek_key, new_gemini_key)
             deepseek_api_key = new_deepseek_key
             gemini_api_key = new_gemini_key
-            print(f"{h2}API密钥已加密并保存。")
+            print(f"{h2}{Fore.GREEN}API密钥已成功加密并保存！{Style.RESET_ALL}")
+        # <--- MODIFIED SECTION END ---
 
         elif cmd1 == "ai":
             if not deepseek_api_key and not gemini_api_key:
@@ -665,6 +652,6 @@ update ---- 手动检查并更新软件版本
 # --- 程序主入口 ---
 load_all_data()
 start1()
-check_for_updates_automatic()  # <--- MODIFIED: 调用自动检查函数
+check_for_updates_automatic()
 start2()
 command1()
