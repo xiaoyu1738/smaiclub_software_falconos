@@ -54,6 +54,8 @@ pip install -r requirements.txt
 pip install colorama openai google-generativeai tqdm pycaw pycryptodome
 ```
 
+##### (您也可以下载Releases里的falconos.exe快速在多设备上运行已打包的软件)
+
 ## 📖 使用指南
 
 **1. 启动程序：**
@@ -80,26 +82,29 @@ python FALCON.py
   [命令行]>>>>> setapikey
   ```
 
+**Tip**: 密钥会储存在C:\Users\AppData\Roaming\FALCON中。
+
 ## 🛠️ 可用命令
 
 登录后，您可以使用以下命令：
 
-| 命令            | 描述                                        |
-|:------------- |:----------------------------------------- |
-| `help`        | 显示所有可用命令及其简要说明。                           |
-| `exit`        | 安全退出程序。                                   |
-| `time`        | 显示当前系统时间。                                 |
-| `sysinfo`     | 显示硬件和系统信息。                                |
-| `diag`        | 运行系统核心组件的诊断检查。                            |
-| `randompa`    | 生成一组高强度的随机十六进制密码。                         |
-| `surprise`    | 一个有趣的小彩蛋。                                 |
-| `ai`          | 进入 AI 对话模块，选择模型开始聊天。                      |
-| `proxy`       | 查看或设置 HTTP 代理。这对于在**某些地区**连接 Gemini 至关重要。 |
-| `RC4`         | 使用 RC4 算法快速加密或解密文本。                       |
-| `smaiclub`    | 在默认浏览器中打开 SMAICLUB 官网。                    |
-| `setapikey`   | 加密设置或更新您的 AI 模型 API 密钥。                   |
-| `setpassword` | 修改您的软件登录密钥，并设置/更新密保问题以启用密码重置功能。           |
-| ```update```  | 手动检查软件版本是否有新的更新                           |
+| 命令            | 描述                                                 |
+|:------------- |:-------------------------------------------------- |
+| `help`        | 显示所有可用命令及其简要说明。                                    |
+| `exit`        | 安全退出程序。                                            |
+| `time`        | 显示当前系统时间。                                          |
+| `sysinfo`     | 显示硬件和系统信息。                                         |
+| `diag`        | 运行系统核心组件的诊断检查。                                     |
+| `randompa`    | 生成一组高强度的随机十六进制密码。                                  |
+| `surprise`    | 一个有趣的小彩蛋。                                          |
+| `ai`          | 进入 AI 对话模块，选择模型开始聊天。                               |
+| `proxy`       | 查看或设置 HTTP 代理。这对于在**某些地区**~~(如中国)~~连接 Gemini 至关重要。 |
+| `RC4`         | 使用 RC4 算法快速加密或解密文本。                                |
+| `crypto`      | 使用AES算法，安全加密或解密文件。                                 |
+| `smaiclub`    | 在默认浏览器中打开 SMAICLUB 官网。                             |
+| `setapikey`   | 加密设置或更新您的 AI 模型 API 密钥。                            |
+| `setpassword` | 修改您的软件登录密钥，并设置/更新密保问题以启用密码重置功能。                    |
+| `update`      | 手动检查软件版本是否有新的更新                                    |
 
 ## 🔒 安全说明
 
@@ -107,7 +112,7 @@ python FALCON.py
 
 * 所有的凭证（`config/credentials.dat`）和 API 密钥（`config/api_keys.dat`）**绝不会以明文形式存储**。
 * 我们使用 **AES-GCM 模式**进行加密，该模式同时提供数据的保密性和完整性验证。
-* 最终的解密密钥是由本地生成的随机文件（`config/encryption.key`）与程序内部的 Secret Pepper 组合派生而来，极大提高了破解难度。
+* 最终的解密密钥是由本地生成的随机文件（`config/encryption.key`）~~与程序内部的 Secret Pepper 组合派生而来~~，极大提高了破解难度。
 
 ## 🤝 贡献与参与
 

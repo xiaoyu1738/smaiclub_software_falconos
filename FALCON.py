@@ -10,6 +10,7 @@ import DCai
 import DCai_Gemini
 import FALCON_jd
 import FALCON_logo
+import FALCON_crypto
 import requests
 from tqdm import tqdm
 
@@ -20,7 +21,7 @@ h4 = "[时间]>>>>> "
 h5_deepseek = f"{Fore.BLUE}AI(DeepSeek)>>>>>> {Style.RESET_ALL}"
 
 # --- 全局变量 ---
-CURRENT_VERSION = "2.1.1"
+CURRENT_VERSION = "2.2.0"
 current_proxy = "无"
 deepseek_api_key = None
 gemini_api_key = None
@@ -374,12 +375,30 @@ surprise -- 超级大惊喜
 ai -------- 打开ai对话
 proxy ----- 设置或查看HTTP代理 (用法: proxy / proxy <地址> / proxy clear / proxy help(查看帮助))
 RC4 ------- RC4加解密
+crypto ---- 加密或解密文件
 smaiclub -- 打开SMAICLUB官网
 setapikey - 设置AI模型的API密钥
 setpassword 设置或更改您的软件密钥并添加密码找回功能
 update ---- 手动检查并更新软件版本
                 '''
             )
+
+        elif cmd1 == "crypto":
+            print(f"{h3}文件加密/解密工具。")
+            choice = ""
+            while choice not in ["1", "2", "3"]:
+                choice = input(f"{h3}请选择操作: (1) 加密 (2) 解密 (3) 返回主菜单: ")
+
+            if choice == "3":
+                continue
+
+            file_path = input(f"{h3}请输入要处理的文件路径: ")
+            password = input(f"{h3}请输入密码: ")
+
+            if choice == "1":
+                FALCON_crypto.encrypt_file(file_path, password)
+            elif choice == "2":
+                FALCON_crypto.decrypt_file(file_path, password)
 
         elif cmd1 == "update":
             print(f"{h2}正在检查更新，请稍候...")
