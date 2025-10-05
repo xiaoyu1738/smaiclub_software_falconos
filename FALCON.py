@@ -1,3 +1,4 @@
+#构建命令:pyinstaller --onefile --icon="favicon.ico" --name="FALCON" --hidden-import=pycaw --hidden-import=google.generativeai FALCON.py
 import os
 import time
 import random
@@ -5,6 +6,7 @@ import sys
 import subprocess
 
 from colorama import Fore, Style
+
 
 import DCai
 import DCai_Gemini
@@ -24,7 +26,7 @@ h4 = "[时间]>>>>> "
 h5_deepseek = f"{Fore.BLUE}AI(DeepSeek)>>>>>> {Style.RESET_ALL}"
 
 # --- 全局变量 ---
-CURRENT_VERSION = "2.2.1"
+CURRENT_VERSION = "2.3.1"
 DOCUMENTS_PATH = "D:\\FALCON"  # 定义文档保存路径
 current_proxy = "无"
 deepseek_api_key = None
@@ -604,7 +606,6 @@ qrcode ---- 生成二维码
             print(f"{h2}{Fore.GREEN}API密钥已成功加密并保存！{Style.RESET_ALL}")
 
 
-
         elif cmd1 == "ai":
             if not deepseek_api_key and not gemini_api_key:
                 print(f"{h2}{Fore.YELLOW}警告: 尚未设置任何API密钥。请先使用 'setapikey' 命令进行设置。{Style.RESET_ALL}")
@@ -614,24 +615,34 @@ qrcode ---- 生成二维码
             print("2. Gemini(需使用科学上网并使用Proxy命令设置代理链接)")
             print("3. 返回主菜单")
             choice = ""
-
             while choice not in ["1", "2", "3"]:
                 choice = input(f"{h3}请输入选择 (1/2/3): ")
 
             if choice == "3":
                 continue
             elif choice == "1":
+                if not deepseek_api_key:
+                    print(f"{h2}{Fore.YELLOW}错误: DeepSeek API密钥未设置。{Style.RESET_ALL}")
+                    continue
                 print(f"{h3}正在启动DeepSeek对话...")
                 FALCON_jd.jdt2("正在连接", 0.01)
                 print("基于DeepSeek API")
-                print("AI对话已启动, 输入 aiquit 退出")
-                while True:
-                    q1 = input(h5_deepseek)
-                    if q1 == "aiquit":
-                        break
-                    else:
-                        DCai.ai1(q1, deepseek_api_key)
+                print("AI对话已启动, 输入 aiquit 退出 (或按 Ctrl+C 中断)")
+                try:  # --- 新增的异常处理 ---
+                    while True:
+                        q1 = input(h5_deepseek)
+                        if q1 == "aiquit":
+                            break
+                        else:
+                            DCai.ai1(q1, deepseek_api_key)
+                except KeyboardInterrupt:
+                    print(f"\n{h2}AI 对话已中断。正在返回主命令行...")
+                    time.sleep(0.5)
+
             elif choice == "2":
+                if not gemini_api_key:
+                    print(f"{h2}{Fore.YELLOW}错误: Gemini API密钥未设置。{Style.RESET_ALL}")
+                    continue
                 print(f"{h3}请选择一个Gemini模型:")
                 print("1. gemini-2.5-pro (推荐, 最强全能模型)")
                 print("2. gemini-flash-latest (最新、速度快)")
@@ -648,14 +659,19 @@ qrcode ---- 生成二维码
                 print(f"{h3}正在启动Gemini对话 (模型: {selected_model})...")
                 FALCON_jd.jdt2("正在连接，如果加载速度过慢请打开全局模式或TUN模式", 0.01)
                 print("基于Google Gemini API")
-                print("AI对话已启动, 输入 aiquit 退出")
+                print("AI对话已启动, 输入 aiquit 退出 (或按 Ctrl+C 中断)")
                 h5_gemini = f"{Fore.GREEN}AI(Gemini)>>>>>> {Style.RESET_ALL}"
-                while True:
-                    q1 = input(h5_gemini)
-                    if q1 == "aiquit":
-                        break
-                    else:
-                        DCai_Gemini.ai_gemini_chat(q1, selected_model, gemini_api_key)
+                try:  # --- 新增的异常处理 ---
+                    while True:
+                        q1 = input(h5_gemini)
+                        if q1 == "aiquit":
+                            break
+                        else:
+                            DCai_Gemini.ai_gemini_chat(q1, selected_model, gemini_api_key)
+                except KeyboardInterrupt:
+                    print(f"\n{h2}AI 对话已中断。正在返回主命令行...")
+                    time.sleep(0.5)
+
 
         elif cmd1.startswith("proxy"):
             global current_proxy
