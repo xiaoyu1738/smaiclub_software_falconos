@@ -236,12 +236,20 @@ def jdt2(text2, speed2):
 
 
 def random16(num1):
-    for rod in range(num1):
-        random_hex_list = []
-        for _ in range(5):
-            random_int = random.randint(0, 16 ** 16 - 1)
-            random_hex_list.append(f'{random_int:016x}')
-        print(' '.join(random_hex_list))
+    """
+    生成指定数量的随机密码。
+    为了更好地集成，此函数现在返回一个密码列表，而不是直接打印。
+    """
+    passwords = []
+    # 为了保持与旧行为类似的输出量，我们生成 num1 * 5 个密码
+    total_passwords = num1 * 5
+    if total_passwords == 0:
+        return []
+
+    for _ in range(total_passwords):
+        random_int = random.randint(0, 16 ** 16 - 1)
+        passwords.append(f'{random_int:016x}')
+    return passwords
 
 
 def open_club_website():

@@ -13,6 +13,9 @@ import FALCON_logo
 import FALCON_crypto
 import requests
 from tqdm import tqdm
+import hashlib
+import psutil
+import qrcode
 
 h1 = "[身份验证]>>>>> "
 h2 = "[系统]>>>>> "
@@ -21,7 +24,8 @@ h4 = "[时间]>>>>> "
 h5_deepseek = f"{Fore.BLUE}AI(DeepSeek)>>>>>> {Style.RESET_ALL}"
 
 # --- 全局变量 ---
-CURRENT_VERSION = "2.2.0"
+CURRENT_VERSION = "2.2.1"
+DOCUMENTS_PATH = "D:\\FALCON"  # 定义文档保存路径
 current_proxy = "无"
 deepseek_api_key = None
 gemini_api_key = None
@@ -380,8 +384,109 @@ smaiclub -- 打开SMAICLUB官网
 setapikey - 设置AI模型的API密钥
 setpassword 设置或更改您的软件密钥并添加密码找回功能
 update ---- 手动检查并更新软件版本
+hash ------ 计算文本或文件的哈希值
+monitor --- 实时监控系统资源
+qrcode ---- 生成二维码
                 '''
             )
+
+        elif cmd1 == "hash":
+            print(f"{h3}哈希计算器")
+            print("1. 计算文本哈希")
+            print("2. 计算文件哈希")
+            choice = input(f"{h3}请选择操作: ")
+
+            if choice == '1':
+                text_to_hash = input(f"{h3}请输入要计算哈希的文本: ")
+                encoded_text = text_to_hash.encode('utf-8')
+                md5_hash = hashlib.md5(encoded_text).hexdigest()
+                sha1_hash = hashlib.sha1(encoded_text).hexdigest()
+                sha256_hash = hashlib.sha256(encoded_text).hexdigest()
+                print(f"{h2}MD5: {md5_hash}")
+                print(f"{h2}SHA-1: {sha1_hash}")
+                print(f"{h2}SHA-256: {sha256_hash}")
+            elif choice == '2':
+                file_path = input(f"{h3}请输入文件路径: ")
+                try:
+                    md5 = hashlib.md5()
+                    sha1 = hashlib.sha1()
+                    sha256 = hashlib.sha256()
+                    with open(file_path, 'rb') as f:
+                        while chunk := f.read(8192):
+                            md5.update(chunk)
+                            sha1.update(chunk)
+                            sha256.update(chunk)
+                    print(f"{h2}文件: {file_path}")
+                    print(f"{h2}MD5: {md5.hexdigest()}")
+                    print(f"{h2}SHA-1: {sha1.hexdigest()}")
+                    print(f"{h2}SHA-256: {sha256.hexdigest()}")
+                except FileNotFoundError:
+                    print(f"{h2}{Fore.RED}错误: 文件未找到。{Style.RESET_ALL}")
+                except Exception as e:
+                    print(f"{h2}{Fore.RED}计算文件哈希时出错: {e}{Style.RESET_ALL}")
+            else:
+                print(f"{h3}无效的选择。")
+
+        elif cmd1 == "monitor":
+            try:
+                print(f"{h2}正在获取系统资源信息...")
+                cpu_percent = psutil.cpu_percent(interval=1)
+                memory = psutil.virtual_memory()
+                disk = psutil.disk_usage('/')
+
+                print("\n--- 系统资源监控 ---")
+                # CPU
+                print(f"{Fore.CYAN}CPU 使用率: {cpu_percent}%{Style.RESET_ALL}")
+                # 内存
+                mem_total_gb = memory.total / (1024 ** 3)
+                mem_used_gb = memory.used / (1024 ** 3)
+                print(
+                    f"{Fore.GREEN}内存: {mem_used_gb:.2f} GB / {mem_total_gb:.2f} GB ({memory.percent} %){Style.RESET_ALL}")
+                # 磁盘
+                disk_total_gb = disk.total / (1024 ** 3)
+                disk_used_gb = disk.used / (1024 ** 3)
+                print(
+                    f"{Fore.YELLOW}主磁盘 ('/') 使用率: {disk_used_gb:.2f} GB / {disk_total_gb:.2f} GB ({disk.percent} %){Style.RESET_ALL}")
+                print("----------------------\n")
+
+            except Exception as e:
+                print(f"{h2}{Fore.RED}获取系统资源信息时出错: {e}{Style.RESET_ALL}")
+
+        elif cmd1 == "qrcode":
+            data_to_encode = input(f"{h3}请输入要编码到二维码中的文本或URL: ")
+            if not data_to_encode:
+                print(f"{h2}{Fore.YELLOW}输入内容不能为空。{Style.RESET_ALL}")
+                continue
+
+            print("1. 在终端中直接显示 (需要终端支持)")
+            print("2. 保存为图片文件 (PNG)")
+            choice = input(f"{h3}请选择输出方式: ")
+
+            if choice == '1':
+                try:
+                    print(f"{h2}正在生成二维码，请将终端窗口调大以获得最佳效果...")
+                    qr = qrcode.QRCode()
+                    qr.add_data(data_to_encode)
+                    qr.make(fit=True)
+                    qr.print_tty()
+                except Exception as e:
+                    print(f"{h2}{Fore.RED}在终端显示二维码时出错: {e}{Style.RESET_ALL}")
+            elif choice == '2':
+                filename = input(f"{h3}请输入要保存的文件名 (例如: my_qrcode.png): ")
+                if not filename.lower().endswith('.png'):
+                    filename += '.png'
+
+                # 构建完整的保存路径
+                save_path = os.path.join(DOCUMENTS_PATH, filename)
+
+                try:
+                    img = qrcode.make(data_to_encode)
+                    img.save(save_path)  # 使用完整的路径保存
+                    print(f"{h2}{Fore.GREEN}二维码已成功保存为: {os.path.abspath(save_path)}{Style.RESET_ALL}")
+                except Exception as e:
+                    print(f"{h2}{Fore.RED}保存二维码图片时出错: {e}{Style.RESET_ALL}")
+            else:
+                print(f"{h3}无效的选择。")
 
         elif cmd1 == "crypto":
             print(f"{h3}文件加密/解密工具。")
@@ -396,9 +501,12 @@ update ---- 手动检查并更新软件版本
             password = input(f"{h3}请输入密码: ")
 
             if choice == "1":
+                # FALCON_crypto.encrypt_file 内部已有确认和删除逻辑
                 FALCON_crypto.encrypt_file(file_path, password)
             elif choice == "2":
+                # FALCON_crypto.decrypt_file 内部已有确认和删除逻辑
                 FALCON_crypto.decrypt_file(file_path, password)
+
 
         elif cmd1 == "update":
             print(f"{h2}正在检查更新，请稍候...")
@@ -478,29 +586,29 @@ update ---- 手动检查并更新软件版本
             print("核心状态正常")
             print("系统运行正常")
 
-        # <--- MODIFIED SECTION START ---
         elif cmd1 == "setapikey":
             global deepseek_api_key, gemini_api_key
             print(f"{h2}开始设置API密钥...")
 
-            new_deepseek_key = input(f"{h3}请输入DeepSeek API密钥 (直接回车可跳过): ")
-            new_gemini_key = input(f"{h3}请输入Gemini API密钥 (直接回车可跳过): ")
+            # 如果已有密钥，可以考虑显示部分作为提示，但为了安全最好不显示
+            new_deepseek_key = input(f"{h3}请输入DeepSeek API密钥 (直接回车可跳过): ").strip()
+            new_gemini_key = input(f"{h3}请输入Gemini API密钥 (直接回车可跳过): ").strip()
 
-            if not new_deepseek_key and not new_gemini_key:
-                print(f"{h2}{Fore.YELLOW}您没有输入任何密钥，API密钥设置保持不变。{Style.RESET_ALL}")
-                continue
+            # 如果用户没输入新值，则保留旧值
+            final_deepseek_key = new_deepseek_key if new_deepseek_key else deepseek_api_key
+            final_gemini_key = new_gemini_key if new_gemini_key else gemini_api_key
 
-            FALCON_jd.save_api_keys(new_deepseek_key, new_gemini_key)
-            deepseek_api_key = new_deepseek_key
-            gemini_api_key = new_gemini_key
+            FALCON_jd.save_api_keys(final_deepseek_key, final_gemini_key)
+            deepseek_api_key = final_deepseek_key
+            gemini_api_key = final_gemini_key
             print(f"{h2}{Fore.GREEN}API密钥已成功加密并保存！{Style.RESET_ALL}")
-        # <--- MODIFIED SECTION END ---
+
+
 
         elif cmd1 == "ai":
             if not deepseek_api_key and not gemini_api_key:
                 print(f"{h2}{Fore.YELLOW}警告: 尚未设置任何API密钥。请先使用 'setapikey' 命令进行设置。{Style.RESET_ALL}")
                 continue
-
             print(f"{h3}请选择一个AI模型:")
             print("1. DeepSeek")
             print("2. Gemini(需使用科学上网并使用Proxy命令设置代理链接)")
@@ -622,10 +730,48 @@ update ---- 手动检查并更新软件版本
             time.sleep(0.1)
             print("安全级别: 114514级")
 
+
         elif cmd1 == "randompa":
-            time.sleep(1)
-            FALCON_jd.random16(100)
-            print("随机密码已生成")
+            try:
+                num_input = input(f"{h3}请输入需要生成的密码数量 (默认为5): ")
+                num_to_generate = int(num_input) if num_input.isdigit() and int(num_input) > 0 else 5
+            except ValueError:
+                num_to_generate = 5
+
+            print(f"{h2}正在生成 {num_to_generate} 个密码...")
+            time.sleep(0.5)
+            num1_equivalent = (num_to_generate + 4) // 5
+            passwords = FALCON_jd.random16(num1_equivalent)
+            passwords_to_show = passwords[:num_to_generate]
+            print(f"{h2}已生成以下密码:")
+
+            for i in range(0, len(passwords_to_show), 4):
+                print("  " + " ".join(passwords_to_show[i:i + 4]))
+
+            # --- 新增的保存逻辑 ---
+            save_choice = input(f"\n{h3}是否要将这些密码保存到文件中？ (y/n): ").lower()
+            if save_choice == 'y':
+                # 使用时间戳创建唯一文件名
+                timestamp = time.strftime('%Y%m%d_%H%M%S')
+                filename = f"passwords_{timestamp}.txt"
+                save_path = os.path.join(DOCUMENTS_PATH, filename)
+                try:
+                    with open(save_path, 'w', encoding='utf-8') as f:
+                        f.write(f"--- FALCON OS 密码生成记录 ---\n")
+                        f.write(f"生成时间: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+                        f.write("--------------------------------\n\n")
+                        for password in passwords_to_show:
+                            f.write(password + '\n')
+
+                    print(f"{h2}{Fore.GREEN}密码已成功保存到: {os.path.abspath(save_path)}{Style.RESET_ALL}")
+
+                except Exception as e:
+
+                    print(f"{h2}{Fore.RED}保存文件时出错: {e}{Style.RESET_ALL}")
+
+            else:
+
+                print(f"{h2}密码未保存。")
 
         elif cmd1 == "surprise":
             print("请不要佩戴耳机")
@@ -644,9 +790,12 @@ update ---- 手动检查并更新软件版本
         elif cmd1 == "RC4":
             print(f"{h3}RC4 加解密工具。")
             choice = ""
-            while choice not in ["1", "2"]:
-                choice = input(f"{h3}请选择操作: (1) 加密 (2) 解密: ")
-            if choice == "1":
+            while choice not in ["1", "2", "3"]:
+                choice = input(f"{h3}请选择操作: (1) 加密 (2) 解密 (3) 返回主菜单: ")
+
+            if choice == "3":
+                continue
+            elif choice == "1":
                 data_to_encrypt = input(f"{h3}请输入需要加密的明文: ")
                 encryption_key = input(f"{h3}请输入加密密钥: ")
                 encrypted_result = FALCON_jd.rc4_encrypt_command(data_to_encrypt, encryption_key)
@@ -669,8 +818,20 @@ update ---- 手动检查并更新软件版本
 
 
 # --- 程序主入口 ---
-load_all_data()
-start1()
-check_for_updates_automatic()
-start2()
-command1()
+if __name__ == "__main__":
+    # 确保文档目录存在
+    if not os.path.exists(DOCUMENTS_PATH):
+        try:
+            os.makedirs(DOCUMENTS_PATH)
+            print(f"{h2}已自动创建文档保存目录: {DOCUMENTS_PATH}")
+        except OSError as e:
+            print(f"{h2}{Fore.RED}创建文档目录 {DOCUMENTS_PATH} 失败: {e}{Style.RESET_ALL}")
+            print(f"{h2}{Fore.YELLOW}文件将保存在当前程序目录下。{Style.RESET_ALL}")
+            DOCUMENTS_PATH = "."  # 如果创建失败，则退回到当前目录
+
+    load_all_data()
+    FALCON_logo.big_logo_falcon()  # 可以在这里加一个大Logo
+    start1()
+    check_for_updates_automatic()
+    start2()
+    command1()
