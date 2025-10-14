@@ -12,7 +12,7 @@ from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout, QP
                              QComboBox, QFileDialog, QSpinBox, QGridLayout, QInputDialog,
                              QSplashScreen)
 from PyQt6.QtCore import QThread, pyqtSignal, Qt
-from PyQt6.QtGui import QIcon, QPixmap, QImage, QFont, QTextCursor
+from PyQt6.QtGui import QIcon, QPixmap, QImage, QFont, QTextCursor, QPainter
 
 # Import your existing logic modules
 import FALCON_jd
@@ -163,9 +163,25 @@ class CryptoWorker(QThread):
 
 class SplashScreen(QSplashScreen):
     def __init__(self):
-        super().__init__(QPixmap("logo.png"))
+        original_pixmap = QPixmap("logo.png")
+        text_margin = 50
+        new_width = original_pixmap.width()
+        new_height = original_pixmap.height() + text_margin
+        composite_pixmap = QPixmap(new_width, new_height)
+        composite_pixmap.fill(Qt.GlobalColor.transparent)
+        painter = QPainter(composite_pixmap)
+        painter.drawPixmap(0, 0, original_pixmap)  # 在左上角 (0, 0) 位置绘制
+        painter.end()
+        super().__init__(composite_pixmap)
+
         self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint)
-        self.showMessage("正在初始化FALCON OS...", Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter, Qt.GlobalColor.white)
+        self.showMessage("正在初始化FALCON OS...",
+                         Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter,
+                         Qt.GlobalColor.white)
+    def update_message(self, msg):
+        self.showMessage(msg,
+                         Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter,
+                         Qt.GlobalColor.white)
 
     def show_message(self, msg):
         self.showMessage(msg, Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter, Qt.GlobalColor.white)
