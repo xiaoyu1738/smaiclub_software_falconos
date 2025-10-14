@@ -5,7 +5,6 @@ import time
 import random
 import hashlib
 import qrcode
-import FALCON_updater
 from PIL import Image
 
 from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
