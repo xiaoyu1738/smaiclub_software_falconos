@@ -22,6 +22,16 @@ import DCai_Gemini
 from openai import OpenAI, AuthenticationError
 import google.generativeai as genai
 
+def resource_path(relative_path):
+    """ 获取资源的绝对路径，适用于开发环境和 PyInstaller 打包环境 """
+    try:
+        # PyInstaller 创建一个临时文件夹并将路径存储在 _MEIPASS 中
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
 # --- Global Variables and Constants ---
 CURRENT_VERSION = "2.4.0 GUI"
 DOCUMENTS_PATH = os.path.join(os.path.expanduser('~'), 'Documents', 'FALCON')
@@ -163,7 +173,7 @@ class CryptoWorker(QThread):
 
 class SplashScreen(QSplashScreen):
     def __init__(self):
-        original_pixmap = QPixmap("logo.png")
+        original_pixmap = QPixmap(resource_path("logo.png"))
         text_margin = 50
         new_width = original_pixmap.width()
         new_height = original_pixmap.height() + text_margin
@@ -256,7 +266,7 @@ class LoginWindow(QDialog):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("FALCON OS - 身份验证")
-        self.setWindowIcon(QIcon("favicon.ico"))  # FIX: Icon restored
+        self.setWindowIcon(QIcon(resource_path("favicon.ico")))  # FIX: Icon restored
         self.setFixedSize(350, 150)
         self.attempts_left = 3
         self.active_password = user_password if user_password else "114514"
@@ -310,7 +320,7 @@ class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle(f"FALCON OS v{CURRENT_VERSION}")
-        self.setWindowIcon(QIcon("favicon.ico")) # fix icon restored
+        self.setWindowIcon(QIcon(resource_path("favicon.ico"))) # fix icon restored
         self.setGeometry(100, 100, 950, 750)
         self.ai_worker = None
         self.crypto_worker = None
