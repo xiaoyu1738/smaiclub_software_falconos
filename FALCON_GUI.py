@@ -10,7 +10,7 @@ from PIL import Image
 from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
                              QLineEdit, QLabel, QMessageBox, QDialog, QTabWidget, QTextEdit,
                              QComboBox, QFileDialog, QSpinBox, QGridLayout, QInputDialog,
-                             QSplashScreen)
+                             QSplashScreen, QDialogButtonBox)
 from PyQt6.QtCore import QThread, pyqtSignal, Qt, QTimer
 from PyQt6.QtGui import QIcon, QPixmap, QImage, QFont, QTextCursor, QPainter
 
@@ -171,6 +171,80 @@ class CryptoWorker(QThread):
             __builtins__.input = original_input
 
 # --- GUI Windows ---
+
+class AboutDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("关于 FALCON OS")
+        self.setMinimumSize(550, 450)
+
+        self.info_text_cn = f"""
+<b>版权所有 © 2025 SMAICLUB Software</b><br>
+保留所有权利。<br><br>
+<b>FALCON_OS Application</b><br>
+版本: {CURRENT_VERSION}<br><br>
+该程序是自由软件：您可以在自由软件基金会发布的 GNU 通用公共许可证（GPL）第三版或任何更新版本的条款下，重新分发和/或修改它。<br><br>
+分发本程序的目的是希望它有用，但不提供任何担保，甚至不提供默示的适销性或特定用途的适用性担保。有关更多详细信息，请参阅随本程序提供的 GNU 通用公共许可证副本。如果未收到副本，请访问 <a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a> 查看。<br><br>
+<b>储存库:</b> <a href="https://www.github.com/xiaoyu1738/smaiclub_software_falconos">https://www.github.com/xiaoyu1738/smaiclub_software_falconos</a>
+"""
+
+        self.info_text_en = f"""
+<b>Copyright © 2025 SMAICLUB Software</b><br>
+All rights reserved.<br><br>
+<b>FALCON_OS Application</b><br>
+Version: {CURRENT_VERSION}<br><br>
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.<br><br>
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.<br><br>
+You should have received a copy of the GNU General Public License along with this program. If not, see <a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>.<br><br>
+<b>Repository:</b> <a href="https://www.github.com/xiaoyu1738/smaiclub_software_falconos">https://www.github.com/xiaoyu1738/smaiclub_software_falconos</a>
+"""
+        # --- Layout ---
+        layout = QVBoxLayout(self)
+
+        # Logo
+        logo_label = QLabel()
+        pixmap = QPixmap(resource_path("logo.png"))
+        logo_label.setPixmap(pixmap.scaledToWidth(200, Qt.TransformationMode.SmoothTransformation))
+        logo_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(logo_label)
+
+        # Info Text
+        self.info_label = QLabel(self.info_text_cn)
+        self.info_label.setWordWrap(True)
+        self.info_label.setOpenExternalLinks(True)
+        layout.addWidget(self.info_label)
+
+        # Language Buttons
+        lang_button_layout = QHBoxLayout()
+        self.cn_button = QPushButton("中文")
+        self.en_button = QPushButton("English")
+        lang_button_layout.addStretch()
+        lang_button_layout.addWidget(self.cn_button)
+        lang_button_layout.addWidget(self.en_button)
+        lang_button_layout.addStretch()
+        layout.addLayout(lang_button_layout)
+
+        # Close Button
+        button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
+        button_box.rejected.connect(self.reject)
+        layout.addWidget(button_box)
+
+        # --- Connections ---
+        self.cn_button.clicked.connect(lambda: self.set_language('cn'))
+        self.en_button.clicked.connect(lambda: self.set_language('en'))
+
+        self.set_language('cn') # Default to Chinese
+
+    def set_language(self, lang):
+        if lang == 'cn':
+            self.info_label.setText(self.info_text_cn)
+            self.cn_button.setEnabled(False)
+            self.en_button.setEnabled(True)
+        else:
+            self.info_label.setText(self.info_text_en)
+            self.cn_button.setEnabled(True)
+            self.en_button.setEnabled(False)
+
 
 class SplashScreen(QSplashScreen):
     def __init__(self):
@@ -483,7 +557,10 @@ class MainWindow(QWidget):
         self.check_update_button = QPushButton("🔄 检查更新")
         layout.addWidget(self.check_update_button, 9, 0, 1, 2)
 
-        layout.setRowStretch(10, 1)
+        self.about_button = QPushButton("ℹ️ 关于")
+        layout.addWidget(self.about_button, 10, 0, 1, 2)
+
+        layout.setRowStretch(11, 1)
         self.tabs.addTab(tab_settings, "⚙️ 设置")
 
     def _connect_signals(self):
@@ -507,6 +584,12 @@ class MainWindow(QWidget):
         self.set_proxy_button.clicked.connect(self.set_proxy)
         self.clear_proxy_button.clicked.connect(self.clear_proxy)
         self.check_update_button.clicked.connect(self.check_for_updates_manual)
+        self.about_button.clicked.connect(self.show_about_dialog)
+
+    def show_about_dialog(self):
+        """显示关于对话框。"""
+        dialog = AboutDialog(self)
+        dialog.exec()
 
     def check_for_updates_auto_silent(self):
         """启动时自动、静默地检查更新。"""

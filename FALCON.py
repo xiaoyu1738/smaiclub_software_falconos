@@ -282,8 +282,52 @@ update ---- 手动检查并更新软件版本
 hash ------ 计算文本或文件的哈希值
 monitor --- 实时监控系统资源
 qrcode ---- 生成二维码
+info ------ 显示软件版权和版本信息
                 '''
             )
+
+        elif cmd1 == "info":
+            info_text_cn = f"""
+版权所有 © 2025 SMAICLUB Software
+保留所有权利。
+
+FALCON_OS Application
+版本: {CURRENT_VERSION}
+
+该程序是自由软件：您可以在自由软件基金会发布的 GNU 通用公共许可证（GPL）第三版或任何更新版本的条款下，重新分发和/或修改它。
+分发本程序的目的是希望它有用，但不提供任何担保，甚至不提供默示的适销性或特定用途的适用性担保。
+有关更多详细信息，请参阅随本程序提供的 GNU 通用公共许可证副本。如果未收到副本，请访问 http://www.gnu.org/licenses/ 查看。
+
+储存库: https://www.github.com/xiaoyu1738/smaiclub_software_falconos
+"""
+
+            info_text_en = f"""
+Copyright © 2025 SMAICLUB Software
+All rights reserved.
+
+FALCON_OS Application
+Version: {CURRENT_VERSION}
+
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses/.
+
+Repository: https://www.github.com/xiaoyu1738/smaiclub_software_falconos
+"""
+            while True:
+                lang_choice = input(f"{h3}请选择语言 / Please select language: (1) 中文 (2) English (3) 返回 / Back: ")
+                if lang_choice == '1':
+                    print(info_text_cn)
+                    break
+                elif lang_choice == '2':
+                    print(info_text_en)
+                    break
+                elif lang_choice == '3':
+                    break
+                else:
+                    print(f"{h3}无效选择 / Invalid selection.")
 
         elif cmd1 == "update":
             print(f"{h2}正在手动检查更新...")
