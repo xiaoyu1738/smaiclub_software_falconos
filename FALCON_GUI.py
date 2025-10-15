@@ -1,4 +1,5 @@
-# FALCON_GUI.py (Version 2.1 - SyntaxError Fixed & Fully Integrated)
+# 打包命令 pyinstaller --onefile --windowed --name "FALCON_OS" --icon="favicon.ico" --hidden-import="pycaw" --hidden-import="google.generativeai" --hidden-import="comtypes" --hidden-import="PyQt6" --add-data "logo.png;." --add-data "favicon.ico;." FALCON_GUI.py
+# FALCON_GUI.py (Version 2.4.11)
 import sys
 import os
 import time

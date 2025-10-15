@@ -1,4 +1,5 @@
-#构建命令:pyinstaller --onefile --icon="favicon.ico" --name="FALCON" --hidden-import=pycaw --hidden-import=google.generativeai FALCON.py
+# 打包命令:pyinstaller --onefile --icon="favicon.ico" --name="FALCON" --hidden-import=pycaw --hidden-import=google.generativeai FALCON.py
+# FALCON.py (Version 2.4.11)
 import os
 import time
 import random
