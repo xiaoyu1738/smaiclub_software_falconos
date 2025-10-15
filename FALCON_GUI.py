@@ -11,7 +11,7 @@ from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout, QP
                              QLineEdit, QLabel, QMessageBox, QDialog, QTabWidget, QTextEdit,
                              QComboBox, QFileDialog, QSpinBox, QGridLayout, QInputDialog,
                              QSplashScreen)
-from PyQt6.QtCore import QThread, pyqtSignal, Qt
+from PyQt6.QtCore import QThread, pyqtSignal, Qt, QTimer
 from PyQt6.QtGui import QIcon, QPixmap, QImage, QFont, QTextCursor, QPainter
 
 # Import your existing logic modules
@@ -19,6 +19,7 @@ import FALCON_jd
 import FALCON_crypto
 import DCai
 import DCai_Gemini
+import FALCON_updater # 导入新的更新模块
 from openai import OpenAI, AuthenticationError
 import google.generativeai as genai
 
@@ -33,7 +34,7 @@ def resource_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 # --- Global Variables and Constants ---
-CURRENT_VERSION = "2.4.0 GUI"
+CURRENT_VERSION = "2.4.9 GUI"
 DOCUMENTS_PATH = os.path.join(os.path.expanduser('~'), 'Documents', 'FALCON')
 if not os.path.exists(DOCUMENTS_PATH):
     os.makedirs(DOCUMENTS_PATH, exist_ok=True)
@@ -327,6 +328,9 @@ class MainWindow(QWidget):
         self.qr_pixmap = None
         self._init_ui()
 
+        # 在主窗口加载后，启动一个延时、静默的自动更新检查
+        QTimer.singleShot(1500, self.check_for_updates_auto_silent)
+
     def _init_ui(self):
         main_layout = QVBoxLayout(self)
         self._create_tabs()
@@ -474,7 +478,12 @@ class MainWindow(QWidget):
         proxy_layout.addWidget(self.set_proxy_button)
         proxy_layout.addWidget(self.clear_proxy_button)
         layout.addLayout(proxy_layout, 7, 0, 1, 2)
-        layout.setRowStretch(8, 1)
+
+        layout.addWidget(QLabel("<b>检查更新</b>"), 8, 0, 1, 2)
+        self.check_update_button = QPushButton("🔄 检查更新")
+        layout.addWidget(self.check_update_button, 9, 0, 1, 2)
+
+        layout.setRowStretch(10, 1)
         self.tabs.addTab(tab_settings, "⚙️ 设置")
 
     def _connect_signals(self):
@@ -497,6 +506,19 @@ class MainWindow(QWidget):
         self.change_password_button.clicked.connect(self.change_password)
         self.set_proxy_button.clicked.connect(self.set_proxy)
         self.clear_proxy_button.clicked.connect(self.clear_proxy)
+        self.check_update_button.clicked.connect(self.check_for_updates_manual)
+
+    def check_for_updates_auto_silent(self):
+        """启动时自动、静默地检查更新。"""
+        # 调用更新器，使用关键字 "falcon_gui"
+        FALCON_updater.check_for_updates(CURRENT_VERSION, "falcon_gui", parent_widget=self, silent=True)
+
+    def check_for_updates_manual(self):
+        """手动检查更新，会显示弹窗。"""
+        self.status_bar.setText("正在检查更新...")
+        # 调用更新器，使用关键字 "falcon_gui"
+        FALCON_updater.check_for_updates(CURRENT_VERSION, "falcon_gui", parent_widget=self)
+        self.status_bar.setText("准备就绪。")
 
     def send_ai_message(self):
         prompt = self.ai_input.text().strip()
@@ -680,6 +702,12 @@ if __name__ == '__main__':
         splash.show_message(step)
         app.processEvents()
         time.sleep(0.08)
+
+    # 移除这里的更新检查，将其移至 MainWindow
+    # splash.update_message("正在检查更新...")
+    # app.processEvents()
+    # FALCON_updater.check_for_updates(CURRENT_VERSION, "FALCON_OS.exe", parent_widget=None, silent=True)
+
 
     login_win = LoginWindow()
     splash.finish(login_win)
