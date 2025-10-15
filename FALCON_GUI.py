@@ -34,7 +34,7 @@ def resource_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 # --- Global Variables and Constants ---
-CURRENT_VERSION = "2.4.9 GUI"
+CURRENT_VERSION = "2.4.11 GUI"
 DOCUMENTS_PATH = os.path.join(os.path.expanduser('~'), 'Documents', 'FALCON')
 if not os.path.exists(DOCUMENTS_PATH):
     os.makedirs(DOCUMENTS_PATH, exist_ok=True)

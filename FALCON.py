@@ -27,7 +27,7 @@ h4 = "[时间]>>>>> "
 h5_deepseek = f"{Fore.BLUE}AI(DeepSeek)>>>>>> {Style.RESET_ALL}"
 
 # --- 全局变量 ---
-CURRENT_VERSION = "2.4.9" # 版本号与更新逻辑同步
+CURRENT_VERSION = "2.4.11" # 版本号与更新逻辑同步
 DOCUMENTS_PATH = "D:\\FALCON"  # 定义文档保存路径
 current_proxy = "无"
 deepseek_api_key = None
