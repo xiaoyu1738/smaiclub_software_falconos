@@ -1,0 +1,13 @@
+openai
+google-generativeai
+pycryptodome
+colorama
+tqdm
+psutil
+qrcode[pil]
+requests
+PyQt6
+cryptography
+pillow
+pycaw; sys_platform == 'win32'
+comtypes; sys_platform == 'win32'
