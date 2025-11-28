@@ -1,118 +1,56 @@
-![alt text](logo.png)
+# FALCON OS: Your Secure Command Line & GUI Companion
 
-# FALCON OS: 你的安全命令行与图形界面伴侣
+FALCON OS is a powerful, security-focused multi-platform application that offers two distinct experiences: an efficiency-built **Command Line Interface (CLI)** and a convenience-built **Graphical User Interface (GUI)**. Its core mission is to provide a smooth, secure AI chat experience, deeply integrated with industry-leading **DeepSeek** and **Google Gemini** large language models. We always prioritize your privacy, ensuring sensitive data like API keys and login credentials are securely stored on your local device using high-strength encryption.
 
-FALCON OS 是一款功能强大、注重安全的多平台应用程序，它提供了两种截然不同的使用体验：一个为效率而生的**命令行界面 (CLI)** 和一个为便捷而生的**图形用户界面 (GUI)**。FALCON 的核心使命是为您提供流畅、安全的 AI 聊天体验，它深度集成了业界领先的 **DeepSeek** 和 **Google Gemini** 大语言模型。我们始终将您的隐私放在首位，确保您的 API 密钥和登录凭证等敏感数据，通过高强度加密算法，安全地存储在您的本地设备上。
+## ✨ Core Highlights
 
-## ✨ 核心亮点
+* **Dual Interface Design**: Choose freely between the classic CLI and the modern PyQt6-based GUI.
+* **Dual AI Engines**: Seamlessly integrate and switch between DeepSeek and Google Gemini models.
+* **Financial-Grade Security**: Uses high-strength **AES-GCM encryption**, combining local random keys with internal "Pepper" for double protection.
+* **Complete User Authentication**: Built-in login system. Default key is `114514`. Reset available via security questions.
+* **Auto-Update**: Built-in update checker connects to GitHub for latest releases.
+* **Powerful Toolkit**:
+  * **File Encryption**: Securely encrypt/decrypt local files.
+  * **Hash Calculator**: Calculate MD5, SHA-1, SHA-256.
+  * **QR Code Generator**: Generate and save QR codes.
+  * **Random Password Generator**: Create high-strength passwords.
+  * **System Monitor**: View CPU and Memory usage.
+  * **Proxy Settings**: Configure HTTP proxy for Gemini access.
 
-* **双界面设计**：您可以根据自己的喜好和需求，在经典的命令行界面（CLI）和使用 PyQt6 构建的现代化图形界面（GUI）之间自由选择。
-* **双 AI 引擎**：无缝集成并切换使用 DeepSeek 和 Google Gemini 的强大语言模型。GUI 界面提供了直观的模型选择下拉菜单，让对话更加便捷。
-* **金融级安全**：采用高强度的 **AES-GCM 加密算法**，结合本地随机密钥与程序内部密钥（Pepper）的双重保护机制，为您的 API 密钥和用户凭证提供坚实的安全保障。
-* **完善的用户认证**：内置完整的登录验证系统。首次使用的默认密钥为 `114514`，我们强烈建议您立即通过 `setpassword` 命令或在 GUI 设置中创建自己的专属高强度密码。
-* **安全的密码找回**：通过设置自定义的密保问题，您将启用一个安全的密码**重置**机制。即使忘记密钥，也能在不泄露信息的前提下重新获得访问权限。
-* **自动更新**：程序内置更新检查功能，能够连接到 GitHub 检查最新版本，并引导您完成自动下载和更新，确保您始终能享受到最新的功能与安全补丁。
-* **强大的集成工具箱**：FALCON 不仅仅是一个 AI 客户端，更是一个集成了多种实用工具的效率平台：
-  * **文件加密/解密**：安全地加密或解密您的本地文件。
-  * **哈希计算器**：快速计算文本或文件的 MD5, SHA-1, SHA-256 哈希值。
-  * **二维码生成器**：为任意文本或网址链接生成二维码，并可保存为图片。
-  * **随机密码生成**：一键生成多个高强度随机密码，并支持保存到本地文件。
-  * **系统资源监控**：实时查看当前系统的 CPU 和内存使用率。
-  * **网络代理设置**：轻松配置 HTTP 代理，以访问 Gemini 等需要特殊网络环境的服务。
+## 🚀 Quick Start
 
-## 🚀 快速开始
+### Option 1: Run from Source
 
-**方式一：直接运行 (推荐)**
-
-前往本项目的 [**Releases 页面**](https://github.com/xiaoyu1738/smaiclub_software_falconos/releases)，下载最新版本的 `FALCON_GUI.exe` (图形界面版) 或 `FALCON_CLI.exe` (命令行版)，无需安装 Python 环境即可直接运行。
-
-**方式二：从源码运行**
-
-1. **环境准备**:
-   
-   * 确保您已安装 Python 3.8 或更高版本。
-
-2. **克隆仓库**:
-   
+1. **Prerequisites**: Python 3.8+.
+2. **Clone**:
    ```bash
    git clone https://github.com/xiaoyu1738/smaiclub_software_falconos
    cd smaiclub_software_falconos
    ```
-
-3. **安装依赖**:
-   建议在虚拟环境中进行安装。
-   
+3. **Install Dependencies**:
    ```bash
    pip install -r requirements.txt
    ```
+4. **Run**:
+   * CLI: `python run_cli.py`
+   * GUI: `python run_gui.py`
 
-## 📖 使用指南
+### Option 2: Binary Releases
+Download from [Releases Page](https://github.com/xiaoyu1738/smaiclub_software_falconos/releases).
 
-1. **启动程序**:
-   
-   * **GUI**: 运行 `python FALCON_GUI.py` 或双击 `FALCON_GUI.exe`。
-   * **CLI**: 运行 `python FALCON.py` 或双击 `FALCON_CLI.exe`。
+## 📖 Usage Guide
 
-2. **首次登录**:
-   程序首次运行时的默认密钥为 `114514`。
+1. **First Login**: Default key is `114514`.
+2. **Initial Setup**:
+   * Use `setpassword` (CLI) or Settings tab (GUI) to change your key and set security questions.
+   * Use `setapikey` (CLI) or Settings tab (GUI) to save your DeepSeek/Gemini API keys.
 
-3. **初始设置 (强烈推荐)**:
-   为了您的数据安全和最佳体验，登录后请务必执行以下操作：
-   
-   * **设置您的专属密钥**:
-     * **CLI**: 使用 `setpassword` 命令修改默认密钥，并设置三个自定义的密保问题。
-     * **GUI**: 在“设置”选项卡中，点击“修改密钥与密保问题”按钮。
-   * **配置 API 密钥**:
-     * **CLI**: 使用 `setapikey` 命令来安全地保存您的 DeepSeek 和 Gemini API 密钥。
-     * **GUI**: 在“设置”选项卡中输入您的密钥，并点击“保存 API 密钥”。
-   
-   **提示**: 您的加密配置文件将保存在用户目录的一个安全位置 (例如，在 Windows 上是 `C:\Users\您的用户名\AppData\Roaming\FALCON`)。
+## 🔒 Security Note
+* Credentials and API keys are **never stored in plain text**.
+* **AES-GCM** ensures confidentiality and integrity.
 
-## 🛠️ CLI 可用命令
-
-| 命令            | 描述                                 |
-|:------------- |:---------------------------------- |
-| `help`        | 显示所有可用命令及其简要说明。                    |
-| `exit`        | 安全退出程序。                            |
-| `time`        | 显示当前系统时间。                          |
-| `sysinfo`     | 显示（虚拟的）硬件和系统信息。                    |
-| `diag`        | 运行系统核心组件的诊断检查。                     |
-| `randompa`    | 生成指定数量的高强度随机密码，并可选择保存到文件。          |
-| `surprise`    | 一个有趣的小彩蛋。                          |
-| `ai`          | 进入 AI 对话模块，选择模型开始聊天。               |
-| `proxy`       | 查看、设置或清除 HTTP 代理。                  |
-| `RC4`         | 使用 RC4 算法快速加密或解密文本。                |
-| `crypto`      | 使用 AES 算法安全地加密或解密文件。               |
-| `smaiclub`    | 在默认浏览器中打开 SMAICLUB 官网。             |
-| `setapikey`   | 加密并设置或更新您的 AI 模型 API 密钥。           |
-| `setpassword` | 修改软件登录密钥，并设置/更新密保问题以启用密码重置。        |
-| `update`      | 手动检查软件是否有新的版本更新。                   |
-| `hash`        | 计算文本或文件的哈希值 (MD5, SHA-1, SHA-256)。 |
-| `monitor`     | 实时监控并显示当前系统的硬件资源使用情况。              |
-| `qrcode`      | 为文本或网址生成二维码，可直接在终端显示或保存为图片。        |
-| `info`        | 显示软件的版权和版本信息。                      |
-
-## 🔒 安全说明
-
-安全是 FALCON 项目的基石。
-
-* 所有的凭证和 API 密钥**绝不会以明文形式存储**。
-* 我们使用 **AES-GCM 加密模式**，该模式不仅能保证数据的机密性，还能验证数据的完整性，有效防止数据被篡改。
-* 最终的加密密钥由您本地设备上随机生成的密钥文件和程序内部的“Pepper”组合派生而来，这使得即使配置文件被窃取，破解难度也极高。
-
-## 🤝 贡献与参与
-
-我们欢迎任何形式的贡献！如果您想帮助改进 FALCON，请随时：
-
-1. Fork 本仓库。
-2. 为您要开发的功能或修复的 Bug 创建一个新的分支。
-3. 提交您的代码更改。
-4. 发起一个 Pull Request，并清晰地描述您的工作内容。
-
-## 📄 许可证
-
-本项目采用 **GNU GPLv3 许可证**。详情请参阅 `LICENSE` 文件。
+## 📄 License
+GNU GPLv3. See `LICENSE`.
 
 ---
-
 © 2025 SMAICLUB, FALCON STUDIO. All rights reserved.

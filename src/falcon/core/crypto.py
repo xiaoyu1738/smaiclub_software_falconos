@@ -4,7 +4,7 @@ from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
-def generate_key(password: str, salt: bytes) -> bytes:
+def generate_key_from_password(password: str, salt: bytes) -> bytes:
     """Generates a key from a password and salt."""
     kdf = PBKDF2HMAC(
         algorithm=hashes.SHA256(),
@@ -15,20 +15,20 @@ def generate_key(password: str, salt: bytes) -> bytes:
     key = base64.urlsafe_b64encode(kdf.derive(password.encode()))
     return key
 
-def encrypt_file(file_path: str, password: str):
+def encrypt_file_aes(file_path: str, password: str):
     """Encrypts a file and deletes the original."""
     try:
         if not os.path.exists(file_path):
-            print(f"错误: 文件 '{file_path}' 未找到。")
+            print(f"Error: File '{file_path}' not found.")
             return False
 
-        confirm = input(f"警告: 加密操作将删除源文件 '{os.path.basename(file_path)}'。是否继续? (y/n): ").lower()
+        confirm = input(f"Warning: Encryption will delete source file '{os.path.basename(file_path)}'. Continue? (y/n): ").lower()
         if confirm != 'y':
-            print("操作已取消。")
+            print("Operation canceled.")
             return False
 
         salt = os.urandom(16)
-        key = generate_key(password, salt)
+        key = generate_key_from_password(password, salt)
         fernet = Fernet(key)
 
         with open(file_path, 'rb') as file:
@@ -42,27 +42,27 @@ def encrypt_file(file_path: str, password: str):
 
         os.remove(file_path)
 
-        print(f"文件已加密并保存为: {encrypted_file_path}")
-        print(f"源文件 '{os.path.basename(file_path)}' 已被删除。")
+        print(f"File encrypted to: {encrypted_file_path}")
+        print(f"Source file '{os.path.basename(file_path)}' deleted.")
         return True
     except FileNotFoundError:
-        print(f"错误: 文件 '{file_path}' 未找到。")
+        print(f"Error: File '{file_path}' not found.")
         return False
     except Exception as e:
-        print(f"加密过程中发生错误: {e}")
+        print(f"Encryption error: {e}")
         return False
 
 
-def decrypt_file(file_path: str, password: str):
+def decrypt_file_aes(file_path: str, password: str):
     """Decrypts a file and deletes the encrypted source."""
     try:
         if not os.path.exists(file_path):
-            print(f"错误: 文件 '{file_path}' 未找到。")
+            print(f"Error: File '{file_path}' not found.")
             return False
 
-        confirm = input(f"警告: 解密操作将删除加密文件 '{os.path.basename(file_path)}'。是否继续? (y/n): ").lower()
+        confirm = input(f"Warning: Decryption will delete encrypted file '{os.path.basename(file_path)}'. Continue? (y/n): ").lower()
         if confirm != 'y':
-            print("操作已取消。")
+            print("Operation canceled.")
             return False
 
         with open(file_path, 'rb') as encrypted_file:
@@ -71,7 +71,7 @@ def decrypt_file(file_path: str, password: str):
         salt = data[:16]
         encrypted_data = data[16:]
 
-        key = generate_key(password, salt)
+        key = generate_key_from_password(password, salt)
         fernet = Fernet(key)
 
         decrypted = fernet.decrypt(encrypted_data)
@@ -82,12 +82,12 @@ def decrypt_file(file_path: str, password: str):
 
         os.remove(file_path)
 
-        print(f"文件已解密并保存为: {original_file_path}")
-        print(f"加密文件 '{os.path.basename(file_path)}' 已被删除。")
+        print(f"File decrypted to: {original_file_path}")
+        print(f"Encrypted file '{os.path.basename(file_path)}' deleted.")
         return True
     except FileNotFoundError:
-        print(f"错误: 文件 '{file_path}' 未找到。")
+        print(f"Error: File '{file_path}' not found.")
         return False
     except Exception as e:
-        print(f"解密过程中发生错误: {e}")
+        print(f"Decryption error: {e}")
         return False
