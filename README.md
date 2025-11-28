@@ -1,5 +1,7 @@
 # FALCON OS: Your Secure Command Line & GUI Companion
 
+[English](README.md) | [简体中文](README_ZH.md)
+
 FALCON OS is a powerful, security-focused multi-platform application that offers two distinct experiences: an efficiency-built **Command Line Interface (CLI)** and a convenience-built **Graphical User Interface (GUI)**. Its core mission is to provide a smooth, secure AI chat experience, deeply integrated with industry-leading **DeepSeek** and **Google Gemini** large language models. We always prioritize your privacy, ensuring sensitive data like API keys and login credentials are securely stored on your local device using high-strength encryption.
 
 ## ✨ Core Highlights
