@@ -16,12 +16,15 @@ from PyQt6.QtCore import QThread, pyqtSignal, Qt, QTimer
 from PyQt6.QtGui import QIcon, QPixmap, QImage, QFont, QTextCursor, QPainter
 
 # Local imports
-from ..core import config, security, crypto, updater
+from ..core import config, security, crypto, updater, i18n
 from ..utils import ui, misc
 from ..ai import deepseek, gemini
 
 from openai import OpenAI, AuthenticationError
 import google.generativeai as genai
+
+# Helper for translation
+t = i18n.t
 
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """
@@ -181,20 +184,10 @@ class CryptoWorker(QThread):
 class AboutDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("About FALCON OS")
+        self.setWindowTitle(t('gui_about_title'))
         self.setMinimumSize(550, 450)
 
-        self.info_text_cn = f"""
-<b>版权所有 © 2025 SMAICLUB Software</b><br>
-保留所有权利。<br><br>
-<b>FALCON_OS Application</b><br>
-版本: {CURRENT_VERSION}<br><br>
-该程序是自由软件：您可以在自由软件基金会发布的 GNU 通用公共许可证（GPL）第三版或任何更新版本的条款下，重新分发和/或修改它。<br><br>
-分发本程序的目的是希望它有用，但不提供任何担保，甚至不提供默示的适销性或特定用途的适用性担保。有关更多详细信息，请参阅随本程序提供的 GNU 通用公共许可证副本。如果未收到副本，请访问 <a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a> 查看。<br><br>
-<b>储存库:</b> <a href="https://www.github.com/xiaoyu1738/smaiclub_software_falconos">https://www.github.com/xiaoyu1738/smaiclub_software_falconos</a>
-"""
-
-        self.info_text_en = f"""
+        self.info_text = f"""
 <b>Copyright © 2025 SMAICLUB Software</b><br>
 All rights reserved.<br><br>
 <b>FALCON_OS Application</b><br>
@@ -215,41 +208,15 @@ You should have received a copy of the GNU General Public License along with thi
         layout.addWidget(logo_label)
 
         # Info Text
-        self.info_label = QLabel(self.info_text_cn)
+        self.info_label = QLabel(self.info_text)
         self.info_label.setWordWrap(True)
         self.info_label.setOpenExternalLinks(True)
         layout.addWidget(self.info_label)
-
-        # Language Buttons
-        lang_button_layout = QHBoxLayout()
-        self.cn_button = QPushButton("中文")
-        self.en_button = QPushButton("English")
-        lang_button_layout.addStretch()
-        lang_button_layout.addWidget(self.cn_button)
-        lang_button_layout.addWidget(self.en_button)
-        lang_button_layout.addStretch()
-        layout.addLayout(lang_button_layout)
 
         # Close Button
         button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
         button_box.rejected.connect(self.reject)
         layout.addWidget(button_box)
-
-        # --- Connections ---
-        self.cn_button.clicked.connect(lambda: self.set_language('cn'))
-        self.en_button.clicked.connect(lambda: self.set_language('en'))
-
-        self.set_language('cn') # Default to Chinese
-
-    def set_language(self, lang):
-        if lang == 'cn':
-            self.info_label.setText(self.info_text_cn)
-            self.cn_button.setEnabled(False)
-            self.en_button.setEnabled(True)
-        else:
-            self.info_label.setText(self.info_text_en)
-            self.cn_button.setEnabled(True)
-            self.en_button.setEnabled(False)
 
 
 class SplashScreen(QSplashScreen):
@@ -285,7 +252,7 @@ class SplashScreen(QSplashScreen):
 class SetPasswordDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Set New Software Key")
+        self.setWindowTitle(t('gui_set_key_title'))
         self.setMinimumWidth(450)
         self.layout = QGridLayout(self)
 
@@ -293,23 +260,23 @@ class SetPasswordDialog(QDialog):
         self.new_pass = QLineEdit(echoMode=QLineEdit.EchoMode.Password)
         self.confirm_pass = QLineEdit(echoMode=QLineEdit.EchoMode.Password)
 
-        self.q1 = QLineEdit(placeholderText="Custom Question 1")
-        self.a1 = QLineEdit(placeholderText="Answer 1")
-        self.q2 = QLineEdit(placeholderText="Custom Question 2")
-        self.a2 = QLineEdit(placeholderText="Answer 2")
-        self.q3 = QLineEdit(placeholderText="Custom Question 3")
-        self.a3 = QLineEdit(placeholderText="Answer 3")
+        self.q1 = QLineEdit(placeholderText=t('gui_q1'))
+        self.a1 = QLineEdit(placeholderText=t('gui_a1'))
+        self.q2 = QLineEdit(placeholderText=t('gui_q2'))
+        self.a2 = QLineEdit(placeholderText=t('gui_a2'))
+        self.q3 = QLineEdit(placeholderText=t('gui_q3'))
+        self.a3 = QLineEdit(placeholderText=t('gui_a3'))
 
-        self.save_button = QPushButton("💾 Save Settings")
+        self.save_button = QPushButton(t('gui_save_settings'))
 
-        self.layout.addWidget(QLabel("Current Key:"), 0, 0)
+        self.layout.addWidget(QLabel(t('current_key')), 0, 0)
         self.layout.addWidget(self.current_pass, 0, 1)
-        self.layout.addWidget(QLabel("New Key:"), 1, 0)
+        self.layout.addWidget(QLabel(t('enter_new_key')), 1, 0)
         self.layout.addWidget(self.new_pass, 1, 1)
-        self.layout.addWidget(QLabel("Confirm New Key:"), 2, 0)
+        self.layout.addWidget(QLabel(t('gui_confirm_new')), 2, 0)
         self.layout.addWidget(self.confirm_pass, 2, 1)
 
-        self.layout.addWidget(QLabel("<b>Security Questions (for Key Recovery):</b>"), 3, 0, 1, 2)
+        self.layout.addWidget(QLabel(t('gui_sq_header')), 3, 0, 1, 2)
         self.layout.addWidget(self.q1, 4, 0)
         self.layout.addWidget(self.a1, 4, 1)
         self.layout.addWidget(self.q2, 5, 0)
@@ -325,11 +292,11 @@ class SetPasswordDialog(QDialog):
 
         current_pass_to_check = user_password if user_password else "114514"
         if self.current_pass.text() != current_pass_to_check:
-            QMessageBox.warning(self, "Validation Failed", "Incorrect current key.")
+            QMessageBox.warning(self, "Validation Failed", t('invalid_key', 0))
             return
 
         if not self.new_pass.text() or self.new_pass.text() != self.confirm_pass.text():
-            QMessageBox.warning(self, "Error", "New key is empty or doesn't match confirmation.")
+            QMessageBox.warning(self, "Error", t('keys_mismatch'))
             return
 
         questions = {
@@ -345,22 +312,22 @@ class SetPasswordDialog(QDialog):
         user_password = self.new_pass.text()
         security_questions = questions
 
-        QMessageBox.information(self, "Success", "New key and security questions saved!")
+        QMessageBox.information(self, "Success", t('saved'))
         self.accept()
 
 class LoginWindow(QDialog):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("FALCON OS - Auth")
+        self.setWindowTitle(t('gui_login_title'))
         self.setWindowIcon(QIcon(resource_path("favicon.ico")))
         self.setFixedSize(350, 150)
         self.attempts_left = 3
         self.active_password = user_password if user_password else "114514"
         layout = QVBoxLayout(self)
-        self.password_input = QLineEdit(echoMode=QLineEdit.EchoMode.Password, placeholderText="Enter Key")
-        login_button = QPushButton("✔️ Verify")
-        forgot_button = QPushButton("❓ Forgot Key")
-        layout.addWidget(QLabel("Enter Access Key:"))
+        self.password_input = QLineEdit(echoMode=QLineEdit.EchoMode.Password, placeholderText=t('enter_key'))
+        login_button = QPushButton(t('gui_login_btn'))
+        forgot_button = QPushButton(t('gui_forgot_btn'))
+        layout.addWidget(QLabel(t('enter_key')))
         layout.addWidget(self.password_input)
         button_layout = QHBoxLayout()
         button_layout.addWidget(forgot_button)
@@ -376,9 +343,9 @@ class LoginWindow(QDialog):
         else:
             self.attempts_left -= 1
             if self.attempts_left > 0:
-                QMessageBox.warning(self, "Error", f"Incorrect Key. {self.attempts_left} attempts left.")
+                QMessageBox.warning(self, "Error", t('invalid_key', self.attempts_left))
             else:
-                QMessageBox.critical(self, "Access Denied", "Too many failed attempts. Exiting.")
+                QMessageBox.critical(self, "Access Denied", t('too_many_attempts'))
                 self.reject()
 
     def forgot_password(self):
@@ -387,25 +354,25 @@ class LoginWindow(QDialog):
             return
 
         question = random.choice(list(security_questions.keys()))
-        answer, ok = QInputDialog.getText(self, "Security Question", f"Answer this to reset key:\n\n{question}")
+        answer, ok = QInputDialog.getText(self, "Security Question", t('security_question', question))
 
         if ok and answer and answer.strip() == security_questions[question]:
-            new_password, ok = QInputDialog.getText(self, "Reset Key", "Verified! Enter new key:", QLineEdit.EchoMode.Password)
+            new_password, ok = QInputDialog.getText(self, "Reset Key", t('verified_set_new'), QLineEdit.EchoMode.Password)
             if ok and new_password:
-                confirm_password, ok = QInputDialog.getText(self, "Confirm Key", "Confirm new key:", QLineEdit.EchoMode.Password)
+                confirm_password, ok = QInputDialog.getText(self, "Confirm Key", t('confirm_new_key'), QLineEdit.EchoMode.Password)
                 if ok and new_password == confirm_password:
                     security.save_credentials(new_password, security_questions)
-                    QMessageBox.information(self, "Success", "Key Reset! Please restart and login with new key.")
+                    QMessageBox.information(self, "Success", t('reset_success'))
                     self.reject()
                 else:
-                    QMessageBox.warning(self, "Error", "Keys do not match.")
+                    QMessageBox.warning(self, "Error", t('keys_mismatch'))
         else:
-            QMessageBox.critical(self, "Failed", "Incorrect Answer.")
+            QMessageBox.critical(self, "Failed", t('incorrect_answer'))
 
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle(f"FALCON OS v{CURRENT_VERSION}")
+        self.setWindowTitle(t('gui_title', CURRENT_VERSION))
         self.setWindowIcon(QIcon(resource_path("favicon.ico")))
         self.setGeometry(100, 100, 950, 750)
         self.ai_worker = None
@@ -420,7 +387,7 @@ class MainWindow(QWidget):
         main_layout = QVBoxLayout(self)
         self._create_tabs()
         main_layout.addWidget(self.tabs)
-        self.status_bar = QLabel("Ready.")
+        self.status_bar = QLabel(t('gui_ready'))
         main_layout.addWidget(self.status_bar)
         self._connect_signals()
 
@@ -435,7 +402,7 @@ class MainWindow(QWidget):
         tab_ai = QWidget()
         layout = QVBoxLayout(tab_ai)
         model_layout = QHBoxLayout()
-        model_layout.addWidget(QLabel("Select Model:"))
+        model_layout.addWidget(QLabel(t('gui_ai_select')))
         self.ai_model_combo = QComboBox()
         self.ai_models = {
             "DeepSeek": {"type": "deepseek", "name": "deepseek-chat"},
@@ -448,30 +415,30 @@ class MainWindow(QWidget):
         self.ai_history = QTextEdit(readOnly=True)
         layout.addWidget(self.ai_history)
         input_layout = QHBoxLayout()
-        self.ai_input = QLineEdit(placeholderText="Type here... (Enter to send)")
-        self.ai_send_button = QPushButton("➤ Send")
+        self.ai_input = QLineEdit(placeholderText=t('gui_ai_input'))
+        self.ai_send_button = QPushButton(t('gui_ai_send'))
         input_layout.addWidget(self.ai_input)
         input_layout.addWidget(self.ai_send_button)
         layout.addLayout(input_layout)
-        self.tabs.addTab(tab_ai, "💬 AI Chat")
+        self.tabs.addTab(tab_ai, t('gui_tab_ai'))
 
     def _create_crypto_tab(self):
         tab_crypto = QWidget()
         layout = QGridLayout(tab_crypto)
-        self.crypto_file_path = QLineEdit(placeholderText="Select file...", readOnly=True)
-        browse_button = QPushButton("📂 Browse...")
-        self.crypto_password = QLineEdit(echoMode=QLineEdit.EchoMode.Password, placeholderText="Encryption Password")
-        encrypt_button = QPushButton("🔒 Encrypt File")
-        decrypt_button = QPushButton("🔑 Decrypt File")
-        layout.addWidget(QLabel("File Path:"), 0, 0)
+        self.crypto_file_path = QLineEdit(placeholderText=t('gui_file_path'), readOnly=True)
+        browse_button = QPushButton(t('gui_browse'))
+        self.crypto_password = QLineEdit(echoMode=QLineEdit.EchoMode.Password, placeholderText=t('password_input'))
+        encrypt_button = QPushButton(t('gui_encrypt_btn'))
+        decrypt_button = QPushButton(t('gui_decrypt_btn'))
+        layout.addWidget(QLabel(t('gui_file_path')), 0, 0)
         layout.addWidget(self.crypto_file_path, 0, 1)
         layout.addWidget(browse_button, 0, 2)
-        layout.addWidget(QLabel("Password:"), 1, 0)
+        layout.addWidget(QLabel(t('password_input')), 1, 0)
         layout.addWidget(self.crypto_password, 1, 1, 1, 2)
         layout.addWidget(encrypt_button, 2, 0, 1, 3)
         layout.addWidget(decrypt_button, 3, 0, 1, 3)
         layout.setRowStretch(4, 1)
-        self.tabs.addTab(tab_crypto, "🛡️ File Crypto")
+        self.tabs.addTab(tab_crypto, t('gui_tab_crypto'))
         self.browse_button = browse_button
         self.encrypt_button = encrypt_button
         self.decrypt_button = decrypt_button
@@ -484,13 +451,13 @@ class MainWindow(QWidget):
         # Hash Calculator
         hash_widget = QWidget()
         hash_layout = QGridLayout(hash_widget)
-        self.hash_input = QLineEdit(placeholderText="Text or File Path")
-        self.hash_browse_button = QPushButton("📂 Select File")
-        self.hash_calc_button = QPushButton("🧮 Calculate Hash")
+        self.hash_input = QLineEdit(placeholderText=t('gui_hash_input'))
+        self.hash_browse_button = QPushButton(t('gui_hash_select'))
+        self.hash_calc_button = QPushButton(t('gui_hash_calc'))
         self.hash_md5_out = QLineEdit(readOnly=True)
         self.hash_sha1_out = QLineEdit(readOnly=True)
         self.hash_sha256_out = QLineEdit(readOnly=True)
-        hash_layout.addWidget(QLabel("Input:"), 0, 0)
+        hash_layout.addWidget(QLabel(t('gui_hash_input')), 0, 0)
         hash_layout.addWidget(self.hash_input, 0, 1)
         hash_layout.addWidget(self.hash_browse_button, 0, 2)
         hash_layout.addWidget(self.hash_calc_button, 1, 0, 1, 3)
@@ -500,79 +467,96 @@ class MainWindow(QWidget):
         hash_layout.addWidget(self.hash_sha1_out, 3, 1, 1, 2)
         hash_layout.addWidget(QLabel("SHA256:"), 4, 0)
         hash_layout.addWidget(self.hash_sha256_out, 4, 1, 1, 2)
-        tools_tabs.addTab(hash_widget, "Hash Calc")
+        tools_tabs.addTab(hash_widget, "Hash")
 
         # QR Code Generator
         qr_widget = QWidget()
         qr_layout = QVBoxLayout(qr_widget)
-        self.qr_input = QLineEdit(placeholderText="Text or URL")
-        self.qr_generate_button = QPushButton("✨ Generate QR")
+        self.qr_input = QLineEdit(placeholderText=t('gui_qr_input'))
+        self.qr_generate_button = QPushButton(t('gui_qr_gen'))
         self.qr_image_label = QLabel("QR Code Preview")
         self.qr_image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.qr_image_label.setFixedSize(250, 250)
         self.qr_image_label.setStyleSheet("border: 1px solid #ccc; background-color: white;")
-        self.qr_save_button = QPushButton("💾 Save QR")
+        self.qr_save_button = QPushButton(t('gui_qr_save'))
         qr_layout.addWidget(self.qr_input)
         qr_layout.addWidget(self.qr_generate_button)
         qr_layout.addWidget(self.qr_image_label, alignment=Qt.AlignmentFlag.AlignCenter)
         qr_layout.addWidget(self.qr_save_button)
-        tools_tabs.addTab(qr_widget, "QR Code")
+        tools_tabs.addTab(qr_widget, "QR")
 
         # Random Password
         pass_widget = QWidget()
         pass_layout = QVBoxLayout(pass_widget)
         pass_options_layout = QHBoxLayout()
-        pass_options_layout.addWidget(QLabel("Count:"))
+        pass_options_layout.addWidget(QLabel(t('gui_pass_count')))
         self.pass_count_spin = QSpinBox(minimum=1, maximum=100, value=10)
-        self.pass_generate_button = QPushButton("🎲 Generate")
-        self.pass_save_button = QPushButton("💾 Save .txt")
+        self.pass_generate_button = QPushButton(t('gui_pass_gen'))
+        self.pass_save_button = QPushButton(t('gui_pass_save'))
         pass_options_layout.addWidget(self.pass_count_spin)
         pass_options_layout.addWidget(self.pass_generate_button)
         pass_options_layout.addWidget(self.pass_save_button)
         self.pass_output = QTextEdit(readOnly=True)
         pass_layout.addLayout(pass_options_layout)
         pass_layout.addWidget(self.pass_output)
-        tools_tabs.addTab(pass_widget, "Random Password")
+        tools_tabs.addTab(pass_widget, "Password")
 
         layout.addWidget(tools_tabs)
-        self.tabs.addTab(tab_tools, "🛠️ Tools")
+        self.tabs.addTab(tab_tools, t('gui_tab_tools'))
 
     def _create_settings_tab(self):
         tab_settings = QWidget()
         layout = QGridLayout(tab_settings)
-        layout.addWidget(QLabel("<b>API Keys</b>"), 0, 0, 1, 2)
+        layout.addWidget(QLabel(t('gui_api_keys')), 0, 0, 1, 2)
         self.deepseek_key_input = QLineEdit(echoMode=QLineEdit.EchoMode.Password, text=deepseek_api_key)
         self.gemini_key_input = QLineEdit(echoMode=QLineEdit.EchoMode.Password, text=gemini_api_key)
-        self.save_keys_button = QPushButton("💾 Save Keys")
-        layout.addWidget(QLabel("DeepSeek API Key:"), 1, 0)
+        self.save_keys_button = QPushButton(t('gui_save_keys'))
+        layout.addWidget(QLabel("DeepSeek Key:"), 1, 0)
         layout.addWidget(self.deepseek_key_input, 1, 1)
-        layout.addWidget(QLabel("Gemini API Key:"), 2, 0)
+        layout.addWidget(QLabel("Gemini Key:"), 2, 0)
         layout.addWidget(self.gemini_key_input, 2, 1)
         layout.addWidget(self.save_keys_button, 3, 0, 1, 2)
 
-        layout.addWidget(QLabel("<b>Security</b>"), 4, 0, 1, 2)
-        self.change_password_button = QPushButton("🔑 Change Key & Questions")
+        layout.addWidget(QLabel(t('gui_security')), 4, 0, 1, 2)
+        self.change_password_button = QPushButton(t('gui_change_key_btn'))
         layout.addWidget(self.change_password_button, 5, 0, 1, 2)
 
-        layout.addWidget(QLabel("<b>Proxy</b>"), 6, 0, 1, 2)
+        layout.addWidget(QLabel(t('gui_proxy')), 6, 0, 1, 2)
         self.proxy_input = QLineEdit(placeholderText="e.g. http://127.0.0.1:7890")
-        self.set_proxy_button = QPushButton("✔️ Set Proxy")
-        self.clear_proxy_button = QPushButton("❌ Clear Proxy")
+        self.set_proxy_button = QPushButton(t('gui_set_proxy'))
+        self.clear_proxy_button = QPushButton(t('gui_clear_proxy'))
         proxy_layout = QHBoxLayout()
         proxy_layout.addWidget(self.proxy_input)
         proxy_layout.addWidget(self.set_proxy_button)
         proxy_layout.addWidget(self.clear_proxy_button)
         layout.addLayout(proxy_layout, 7, 0, 1, 2)
 
-        layout.addWidget(QLabel("<b>Updates</b>"), 8, 0, 1, 2)
-        self.check_update_button = QPushButton("🔄 Check for Updates")
-        layout.addWidget(self.check_update_button, 9, 0, 1, 2)
+        # Language Selection
+        layout.addWidget(QLabel(t('gui_lang_header')), 8, 0, 1, 2)
+        self.lang_combo = QComboBox()
+        self.lang_codes = list(i18n.LANGUAGES.keys())
+        for code in self.lang_codes:
+            self.lang_combo.addItem(i18n.LANGUAGES[code])
 
-        self.about_button = QPushButton("ℹ️ About")
-        layout.addWidget(self.about_button, 10, 0, 1, 2)
+        # Set current selection
+        try:
+            current_index = self.lang_codes.index(i18n.current_language)
+            self.lang_combo.setCurrentIndex(current_index)
+        except ValueError:
+            pass
 
-        layout.setRowStretch(11, 1)
-        self.tabs.addTab(tab_settings, "⚙️ Settings")
+        self.lang_combo.currentIndexChanged.connect(self.change_language)
+        layout.addWidget(self.lang_combo, 9, 0, 1, 2)
+
+        layout.addWidget(QLabel(t('gui_updates')), 10, 0, 1, 2)
+        self.check_update_button = QPushButton(t('gui_check_update'))
+        layout.addWidget(self.check_update_button, 11, 0, 1, 2)
+
+        self.about_button = QPushButton(t('gui_about'))
+        layout.addWidget(self.about_button, 12, 0, 1, 2)
+
+        layout.setRowStretch(13, 1)
+        self.tabs.addTab(tab_settings, t('gui_tab_settings'))
 
     def _connect_signals(self):
         # AI Tab
@@ -597,6 +581,12 @@ class MainWindow(QWidget):
         self.check_update_button.clicked.connect(self.check_for_updates_manual)
         self.about_button.clicked.connect(self.show_about_dialog)
 
+    def change_language(self, index):
+        new_lang = self.lang_codes[index]
+        if new_lang != i18n.current_language:
+            i18n.save_language(new_lang)
+            QMessageBox.information(self, "Language Changed", t('gui_restart_msg'))
+
     def show_about_dialog(self):
         dialog = AboutDialog(self)
         dialog.exec()
@@ -605,9 +595,9 @@ class MainWindow(QWidget):
         updater.check_for_updates(CURRENT_VERSION, "falcon_gui", parent_widget=self, silent=True)
 
     def check_for_updates_manual(self):
-        self.status_bar.setText("Checking for updates...")
+        self.status_bar.setText(t('checking_updates'))
         updater.check_for_updates(CURRENT_VERSION, "falcon_gui", parent_widget=self)
-        self.status_bar.setText("Ready.")
+        self.status_bar.setText(t('gui_ready'))
 
     def send_ai_message(self):
         prompt = self.ai_input.text().strip()
@@ -618,7 +608,7 @@ class MainWindow(QWidget):
         api_key = deepseek_api_key if model_info['type'] == 'deepseek' else gemini_api_key
 
         if not api_key:
-            QMessageBox.warning(self, "Missing API Key", f"API Key for {selected_model_name} is not set.")
+            QMessageBox.warning(self, "Missing API Key", t('ai_no_keys'))
             return
 
         self.ai_input.clear()
@@ -641,7 +631,7 @@ class MainWindow(QWidget):
     def ai_message_finished(self):
         self.ai_history.append("<br>")
         self.ai_send_button.setEnabled(True)
-        self.status_bar.setText("Ready.")
+        self.status_bar.setText(t('gui_ready'))
         self.ai_input.setFocus()
 
     def ai_message_error(self, error_msg):
@@ -676,7 +666,7 @@ class MainWindow(QWidget):
             self.crypto_password.clear()
         else:
             QMessageBox.critical(self, "Failed", message)
-        self.status_bar.setText("Ready.")
+        self.status_bar.setText(t('gui_ready'))
 
     def browse_hash_file(self):
         file_path, _ = QFileDialog.getOpenFileName(self, "Select File")
@@ -751,7 +741,7 @@ class MainWindow(QWidget):
         deepseek_api_key = self.deepseek_key_input.text()
         gemini_api_key = self.gemini_key_input.text()
         security.save_api_keys(deepseek_api_key, gemini_api_key)
-        QMessageBox.information(self, "Success", "API Keys saved!")
+        QMessageBox.information(self, "Success", t('saved'))
 
     def change_password(self):
         dialog = SetPasswordDialog(self)
@@ -762,7 +752,7 @@ class MainWindow(QWidget):
         if proxy:
             os.environ['HTTP_PROXY'] = proxy
             os.environ['HTTPS_PROXY'] = proxy
-            self.status_bar.setText(f"Proxy set to: {proxy}")
+            self.status_bar.setText(t('proxy_set', proxy))
         else:
             QMessageBox.warning(self, "Error", "Proxy address empty.")
 
@@ -770,7 +760,7 @@ class MainWindow(QWidget):
         os.environ.pop('HTTP_PROXY', None)
         os.environ.pop('HTTPS_PROXY', None)
         self.proxy_input.clear()
-        self.status_bar.setText("Proxy cleared.")
+        self.status_bar.setText(t('proxy_cleared'))
 
 
 # --- Main Application Entry Point ---
