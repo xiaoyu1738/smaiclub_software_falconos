@@ -238,7 +238,7 @@ class SplashScreen(QSplashScreen):
         super().__init__(composite_pixmap)
 
         self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint)
-        self.showMessage("Initializing FALCON OS...",
+        self.showMessage(t('gui_init'),
                          Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter,
                          Qt.GlobalColor.white)
     def update_message(self, msg):
@@ -779,7 +779,8 @@ def run():
 
     # Fake loading
     for i in range(1, 11):
-        splash.show_message(f"Initializing Core H{i}...")
+        # Translate the splash message dynamically
+        splash.show_message(t('gui_core_load', i))
         app.processEvents()
         time.sleep(0.05)
 

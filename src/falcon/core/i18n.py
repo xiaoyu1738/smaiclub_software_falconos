@@ -170,6 +170,8 @@ TRANSLATIONS = {
         "gui_a3": "Answer 3",
         "gui_save_settings": "💾 Save Settings",
         "gui_about_title": "About FALCON OS",
+        "gui_init": "Initializing FALCON OS...",
+        "gui_core_load": "Initializing Core H{}...",
     },
     "zh-CN": {
         "auth_header": "[身份验证]>>>>> ",
@@ -319,6 +321,8 @@ TRANSLATIONS = {
         "gui_a3": "答案 3",
         "gui_save_settings": "💾 保存设置",
         "gui_about_title": "关于 FALCON OS",
+        "gui_init": "正在初始化 FALCON OS...",
+        "gui_core_load": "正在初始化核心 H{}...",
     },
     "zh-TW": {
         "auth_header": "[身份驗證]>>>>> ",
@@ -468,6 +472,8 @@ TRANSLATIONS = {
         "gui_a3": "答案 3",
         "gui_save_settings": "💾 保存設置",
         "gui_about_title": "關於 FALCON OS",
+        "gui_init": "正在初始化 FALCON OS...",
+        "gui_core_load": "正在初始化核心 H{}...",
     },
     "es": {
         "auth_header": "[Autenticación]>>>>> ",
@@ -617,6 +623,8 @@ TRANSLATIONS = {
         "gui_a3": "Respuesta 3",
         "gui_save_settings": "💾 Guardar ajustes",
         "gui_about_title": "Acerca de FALCON OS",
+        "gui_init": "Inicializando FALCON OS...",
+        "gui_core_load": "Inicializando Núcleo H{}...",
     },
     "fr": {
         "auth_header": "[Authentification]>>>>> ",
@@ -766,6 +774,8 @@ TRANSLATIONS = {
         "gui_a3": "Réponse 3",
         "gui_save_settings": "💾 Enregistrer paramètres",
         "gui_about_title": "À propos de FALCON OS",
+        "gui_init": "Initialisation de FALCON OS...",
+        "gui_core_load": "Initialisation du Noyau H{}...",
     },
     "de": {
         "auth_header": "[Authentifizierung]>>>>> ",
@@ -915,6 +925,8 @@ TRANSLATIONS = {
         "gui_a3": "Antwort 3",
         "gui_save_settings": "💾 Einstellungen speichern",
         "gui_about_title": "Über FALCON OS",
+        "gui_init": "Initialisiere FALCON OS...",
+        "gui_core_load": "Initialisiere Kern H{}...",
     },
     "ja": {
         "auth_header": "[認証]>>>>> ",
@@ -1064,6 +1076,8 @@ TRANSLATIONS = {
         "gui_a3": "回答 3",
         "gui_save_settings": "💾 設定保存",
         "gui_about_title": "FALCON OS について",
+        "gui_init": "FALCON OS を初期化中...",
+        "gui_core_load": "コア H{} を初期化中...",
     },
     "ru": {
         "auth_header": "[Аутентификация]>>>>> ",
@@ -1213,6 +1227,8 @@ TRANSLATIONS = {
         "gui_a3": "Ответ 3",
         "gui_save_settings": "💾 Сохранить",
         "gui_about_title": "О FALCON OS",
+        "gui_init": "Инициализация FALCON OS...",
+        "gui_core_load": "Инициализация ядра H{}...",
     }
 }
 
