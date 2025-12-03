@@ -18,7 +18,7 @@ from ..ai import deepseek, gemini
 init(autoreset=True)
 
 # Constants
-CURRENT_VERSION = "2.5.0"
+CURRENT_VERSION = "2.5.03"
 DOCUMENTS_PATH = os.path.join(os.path.expanduser('~'), 'Documents', 'FALCON')
 if not os.path.exists(DOCUMENTS_PATH):
     os.makedirs(DOCUMENTS_PATH, exist_ok=True)
@@ -97,14 +97,12 @@ def authentication_sequence():
     sys.exit(0)
 
 def startup_animation():
-    # Keep loading bar strings simple or untranslated for visual consistency, or translate if needed.
-    # For now, let's keep them English or simple.
-    ui.show_progress_bar_type1("Connecting ", 0.01)
+    ui.show_progress_bar_type1(t('cli_connecting'), 0.01)
     print("")
-    ui.show_progress_bar_type1("Sending Request ", 0.001)
+    ui.show_progress_bar_type1(t('cli_sending_req'), 0.001)
     print("")
     for i in range(1, 15): # Reduced count for brevity
-        ui.show_progress_bar_type1(f"Starting Core H{i} ", 0.001)
+        ui.show_progress_bar_type1(t('cli_starting_core', i), 0.001)
         print("")
 
     time.sleep(0.5)
@@ -112,10 +110,10 @@ def startup_animation():
     time.sleep(0.2)
     print(f"{t('sys_header')}{t('sys_status')}")
     time.sleep(0.2)
-    ui.show_progress_bar_type1("Starting Security Protocols ", 0.001)
+    ui.show_progress_bar_type1(t('cli_security_proto'), 0.001)
     print("")
     time.sleep(0.2)
-    ui.show_progress_bar_type1("Starting Main Program ", 0.01)
+    ui.show_progress_bar_type1(t('cli_starting_main'), 0.01)
     print("")
     time.sleep(0.5)
     print("")

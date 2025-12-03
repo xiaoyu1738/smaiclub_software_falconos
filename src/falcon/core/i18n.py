@@ -172,6 +172,22 @@ TRANSLATIONS = {
         "gui_about_title": "About FALCON OS",
         "gui_init": "Initializing FALCON OS...",
         "gui_core_load": "Initializing Core H{}...",
+        # CLI Specific (Added)
+        "cli_connecting": "Connecting ",
+        "cli_sending_req": "Sending Request ",
+        "cli_starting_core": "Starting Core H{} ",
+        "cli_security_proto": "Starting Security Protocols ",
+        "cli_starting_main": "Starting Main Program ",
+        # diag command messages
+        "checking_core_status": "Checking Core Status ",
+        "checking_sys_status": "Checking System Status ",
+        # sysinfo specific
+        "sys_core": "Core: Quantum Neural Net v2.86",
+        "sys_processor": "Processor: Photonic Array v5.69",
+        "sys_memory": "Memory: 42PB @ 9877654232MHz",
+        "sys_storage": "Storage: 1.685672YB Quantum Crystal",
+        "sys_network": "Network: Global Quantum Backbone",
+        "sys_security": "Security Level: 114514",
     },
     "zh-CN": {
         "auth_header": "[身份验证]>>>>> ",
@@ -323,6 +339,22 @@ TRANSLATIONS = {
         "gui_about_title": "关于 FALCON OS",
         "gui_init": "正在初始化 FALCON OS...",
         "gui_core_load": "正在初始化核心 H{}...",
+        # CLI Specific (Added)
+        "cli_connecting": "正在连接 ",
+        "cli_sending_req": "正在发送请求 ",
+        "cli_starting_core": "正在启动核心 H{} ",
+        "cli_security_proto": "启动安全协议 ",
+        "cli_starting_main": "启动主程序 ",
+        # diag command messages
+        "checking_core_status": "正在检查核心状态 ",
+        "checking_sys_status": "正在检查系统状态 ",
+        # sysinfo specific
+        "sys_core": "核心: 量子神经网络 v2.86",
+        "sys_processor": "处理器: 光子阵列 v5.69",
+        "sys_memory": "内存: 42PB @ 9877654232MHz",
+        "sys_storage": "存储: 1.685672YB 量子晶体",
+        "sys_network": "网络: 全球量子骨干网",
+        "sys_security": "安全级别: 114514",
     },
     "zh-TW": {
         "auth_header": "[身份驗證]>>>>> ",
@@ -474,6 +506,21 @@ TRANSLATIONS = {
         "gui_about_title": "關於 FALCON OS",
         "gui_init": "正在初始化 FALCON OS...",
         "gui_core_load": "正在初始化核心 H{}...",
+        # CLI Specific (Added)
+        "cli_connecting": "正在連線 ",
+        "cli_sending_req": "正在發送請求 ",
+        "cli_starting_core": "正在啟動核心 H{} ",
+        "cli_security_proto": "啟動安全協議 ",
+        "cli_starting_main": "啟動主程式 ",
+        "checking_sys_status": "正在檢查系統狀態 ",
+        "checking_core_status": "正在檢查核心狀態 ",
+        # sysinfo specific
+        "sys_core": "核心: 量子神經網絡 v2.86",
+        "sys_processor": "處理器: 光子陣列 v5.69",
+        "sys_memory": "內存: 42PB @ 9877654232MHz",
+        "sys_storage": "存儲: 1.685672YB 量子晶體",
+        "sys_network": "網絡: 全球量子骨幹網",
+        "sys_security": "安全級別: 114514",
     },
     "es": {
         "auth_header": "[Autenticación]>>>>> ",
@@ -625,6 +672,21 @@ TRANSLATIONS = {
         "gui_about_title": "Acerca de FALCON OS",
         "gui_init": "Inicializando FALCON OS...",
         "gui_core_load": "Inicializando Núcleo H{}...",
+        # CLI Specific (Added)
+        "cli_connecting": "Conectando ",
+        "cli_sending_req": "Enviando solicitud ",
+        "cli_starting_core": "Iniciando Núcleo H{} ",
+        "cli_security_proto": "Iniciando protocolos de seguridad ",
+        "cli_starting_main": "Iniciando programa principal ",
+        "checking_core_status": "Comprobando estado del núcleo ",
+        "checking_sys_status": "Comprobando estado del sistema ",
+        # sysinfo specific
+        "sys_core": "Núcleo: Red neuronal cuántica v2.86",
+        "sys_processor": "Procesador: Matriz fotónica v5.69",
+        "sys_memory": "Memoria: 42PB @ 9877654232MHz",
+        "sys_storage": "Almacenamiento: 1.685672YB cristal cuántico",
+        "sys_network": "Red: Espina dorsal cuántica global",
+        "sys_security": "Nivel de seguridad: 114514",
     },
     "fr": {
         "auth_header": "[Authentification]>>>>> ",
@@ -776,6 +838,21 @@ TRANSLATIONS = {
         "gui_about_title": "À propos de FALCON OS",
         "gui_init": "Initialisation de FALCON OS...",
         "gui_core_load": "Initialisation du Noyau H{}...",
+        # CLI Specific (Added)
+        "cli_connecting": "Connexion ",
+        "cli_sending_req": "Envoi de la demande ",
+        "cli_starting_core": "Démarrage du noyau H{} ",
+        "cli_security_proto": "Démarrage des protocoles de sécurité ",
+        "cli_starting_main": "Démarrage du programme principal ",
+        "checking_core_status": "Vérification de l'état du noyau ",
+        "checking_sys_status": "Vérification de l'état du système ",
+        # sysinfo specific
+        "sys_core": "Noyau : Réseau neuronal quantique v2.86",
+        "sys_processor": "Processeur : Matrice photonique v5.69",
+        "sys_memory": "Mémoire : 42PB @ 9877654232MHz",
+        "sys_storage": "Stockage : 1.685672YB cristal quantique",
+        "sys_network": "Réseau : Backbone quantique mondial",
+        "sys_security": "Niveau de sécurité : 114514",
     },
     "de": {
         "auth_header": "[Authentifizierung]>>>>> ",
@@ -927,6 +1004,21 @@ TRANSLATIONS = {
         "gui_about_title": "Über FALCON OS",
         "gui_init": "Initialisiere FALCON OS...",
         "gui_core_load": "Initialisiere Kern H{}...",
+        # CLI Specific (Added)
+        "cli_connecting": "Verbinden ",
+        "cli_sending_req": "Sende Anfrage ",
+        "cli_starting_core": "Starte Kern H{} ",
+        "cli_security_proto": "Starte Sicherheitsprotokolle ",
+        "cli_starting_main": "Starte Hauptprogramm ",
+        "checking_core_status": "Überprüfe Kernstatus ",
+        "checking_sys_status": "Überprüfe Systemstatus ",
+        # sysinfo specific
+        "sys_core": "Kern: Quanten-Neuronales Netzwerk v2.86",
+        "sys_processor": "Prozessor: Photonische Matrix v5.69",
+        "sys_memory": "Speicher: 42PB @ 9877654232MHz",
+        "sys_storage": "Speicherplatz: 1.685672YB Quantenkristall",
+        "sys_network": "Netzwerk: Globales Quanten-Backbone",
+        "sys_security": "Sicherheitsstufe: 114514",
     },
     "ja": {
         "auth_header": "[認証]>>>>> ",
@@ -1078,6 +1170,21 @@ TRANSLATIONS = {
         "gui_about_title": "FALCON OS について",
         "gui_init": "FALCON OS を初期化中...",
         "gui_core_load": "コア H{} を初期化中...",
+        # CLI Specific (Added)
+        "cli_connecting": "接続中 ",
+        "cli_sending_req": "リクエスト送信中 ",
+        "cli_starting_core": "コア H{} を起動中 ",
+        "cli_security_proto": "セキュリティプロトコルを起動中 ",
+        "cli_starting_main": "メインプログラムを起動中 ",
+        "checking_core_status": "コアステータスを確認中 ",
+        "checking_sys_status": "システムステータスを確認中 ",
+        # sysinfo specific
+        "sys_core": "コア: 量子ニューラルネットワーク v2.86",
+        "sys_processor": "プロセッサ: フォトニックマトリックス v5.69",
+        "sys_memory": "メモリ: 42PB @ 9877654232MHz",
+        "sys_storage": "ストレージ: 1.685672YB 量子クリスタル",
+        "sys_network": "ネットワーク: グローバル量子バックボーン",
+        "sys_security": "セキュリティレベル: 114514",
     },
     "ru": {
         "auth_header": "[Аутентификация]>>>>> ",
@@ -1229,6 +1336,22 @@ TRANSLATIONS = {
         "gui_about_title": "О FALCON OS",
         "gui_init": "Инициализация FALCON OS...",
         "gui_core_load": "Инициализация ядра H{}...",
+        # CLI Specific (Added)
+        "cli_connecting": "Подключение ",
+        "cli_sending_req": "Отправка запроса ",
+        "cli_starting_core": "Запуск ядра H{} ",
+        "cli_security_proto": "Запуск протоколов безопасности ",
+        "cli_starting_main": "Запуск основной программы ",
+        # Diag command messages
+        "checking_core_status": "Проверка статуса ядра ",
+        "checking_sys_status": "Проверка статуса системы ",
+        # sysinfo specific
+        "sys_core": "Ядро: Квантовая нейронная сеть v2.86",
+        "sys_processor": "Процессор: Фотонная матрица v5.69",
+        "sys_memory": "Память: 42PB @ 9877654232MHz",
+        "sys_storage": "Хранилище: 1.685672YB квантовый кристалл",
+        "sys_network": "Сеть: Глобальная квантовая магистраль",
+        "sys_security": "Уровень безопасности: 114514",
     }
 }
 
