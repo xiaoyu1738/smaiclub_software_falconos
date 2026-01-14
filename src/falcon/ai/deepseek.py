@@ -3,6 +3,9 @@
 import time
 from openai import OpenAI
 from colorama import init, Fore, Style
+from ..core import i18n
+
+t = i18n.t
 
 # Initialize colorama
 init(autoreset=True)
@@ -19,14 +22,14 @@ def chat_deepseek_stream(prompt: str, api_key: str):
     """
     # 1. Check API Key
     if not api_key:
-        print(f"{AI_PREFIX}{Fore.RED}Error: DeepSeek API key not set. Please use 'setapikey' command.{Style.RESET_ALL}")
+        print(f"{AI_PREFIX}{Fore.RED}{t('ai_ds_error_key')}{Style.RESET_ALL}")
         return
 
     # 2. Initialize Client
     try:
         client = OpenAI(api_key=api_key, base_url=BASE_URL)
     except Exception as e:
-        print(f"\n{Fore.RED}Error initializing OpenAI client: {e}{Style.RESET_ALL}")
+        print(f"\n{Fore.RED}{t('ai_init_error', e)}{Style.RESET_ALL}")
         return
 
     # 3. Send Request and Handle Response
@@ -53,5 +56,5 @@ def chat_deepseek_stream(prompt: str, api_key: str):
         print()  # Newline after completion
 
     except Exception as e:
-        print(f"\n{Fore.RED}Error communicating with DeepSeek API: {e}{Style.RESET_ALL}")
-        print(f"{Fore.YELLOW}Please check your API key and network connection.{Style.RESET_ALL}")
+        print(f"\n{Fore.RED}{t('ai_comm_error', e)}{Style.RESET_ALL}")
+        print(f"{Fore.YELLOW}{t('ai_check_key')}{Style.RESET_ALL}")

@@ -142,13 +142,13 @@ class AIWorker(QThread):
                     if chunk.text: self.new_token.emit(chunk.text)
 
         except (AuthenticationError, genai.types.PermissionDeniedError):
-            self.error.emit("API Request Failed: Invalid API Key. Please check settings.")
+            self.error.emit(t('gui_api_invalid_key'))
         except Exception as e:
             error_message = str(e)
             if "API key" in error_message:
-                self.error.emit("API Request Failed: Invalid API Key.")
+                self.error.emit(t('gui_api_invalid_key'))
             else:
-                self.error.emit(f"API Request Failed: {e}")
+                self.error.emit(t('gui_api_error_header') + f": {e}")
         finally:
             self.finished.emit()
 
@@ -168,14 +168,14 @@ class CryptoWorker(QThread):
         try:
             if self.mode == 'encrypt':
                 result = crypto.encrypt_file_aes(self.file_path, self.password)
-                if result: self.finished.emit(True, f"File encrypted to {self.file_path}.enc")
-                else: self.finished.emit(False, "Encryption failed. Check console.")
+                if result: self.finished.emit(True, t('gui_encrypt_success', self.file_path))
+                else: self.finished.emit(False, t('gui_encrypt_failed'))
             elif self.mode == 'decrypt':
                 result = crypto.decrypt_file_aes(self.file_path, self.password)
-                if result: self.finished.emit(True, f"File decrypted to {self.file_path.replace('.enc', '')}")
-                else: self.finished.emit(False, "Decryption failed. Check console.")
+                if result: self.finished.emit(True, t('gui_decrypt_success', self.file_path.replace('.enc', '')))
+                else: self.finished.emit(False, t('gui_decrypt_failed'))
         except Exception as e:
-            self.finished.emit(False, f"Error: {e}")
+            self.finished.emit(False, t('error') + f": {e}")
         finally:
             __builtins__.input = original_input
 
@@ -188,14 +188,14 @@ class AboutDialog(QDialog):
         self.setMinimumSize(550, 450)
 
         self.info_text = f"""
-<b>Copyright © 2025 SMAICLUB Software</b><br>
+<b>{t('copyright')}</b><br>
 All rights reserved.<br><br>
 <b>FALCON_OS Application</b><br>
 Version: {CURRENT_VERSION}<br><br>
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.<br><br>
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.<br><br>
 You should have received a copy of the GNU General Public License along with this program. If not, see <a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>.<br><br>
-<b>Repository:</b> <a href="https://www.github.com/xiaoyu1738/smaiclub_software_falconos">https://www.github.com/xiaoyu1738/smaiclub_software_falconos</a>
+<b>Repository:</b> <a href="{t('repo_url')}">{t('repo_url')}</a>
 """
         # --- Layout ---
         layout = QVBoxLayout(self)
@@ -292,11 +292,11 @@ class SetPasswordDialog(QDialog):
 
         current_pass_to_check = user_password if user_password else "114514"
         if self.current_pass.text() != current_pass_to_check:
-            QMessageBox.warning(self, "Validation Failed", t('invalid_key', 0))
+            QMessageBox.warning(self, t('gui_validation_failed'), t('invalid_key', 0))
             return
 
         if not self.new_pass.text() or self.new_pass.text() != self.confirm_pass.text():
-            QMessageBox.warning(self, "Error", t('keys_mismatch'))
+            QMessageBox.warning(self, t('error'), t('keys_mismatch'))
             return
 
         questions = {
@@ -305,14 +305,14 @@ class SetPasswordDialog(QDialog):
             self.q3.text().strip(): self.a3.text().strip(),
         }
         if any(not q or not a for q, a in questions.items()):
-            QMessageBox.warning(self, "Error", "All questions and answers must be filled.")
+            QMessageBox.warning(self, t('error'), t('gui_fill_all'))
             return
 
         security.save_credentials(self.new_pass.text(), questions)
         user_password = self.new_pass.text()
         security_questions = questions
 
-        QMessageBox.information(self, "Success", t('saved'))
+        QMessageBox.information(self, t('success'), t('saved'))
         self.accept()
 
 class LoginWindow(QDialog):
@@ -343,31 +343,31 @@ class LoginWindow(QDialog):
         else:
             self.attempts_left -= 1
             if self.attempts_left > 0:
-                QMessageBox.warning(self, "Error", t('invalid_key', self.attempts_left))
+                QMessageBox.warning(self, t('error'), t('invalid_key', self.attempts_left))
             else:
-                QMessageBox.critical(self, "Access Denied", t('too_many_attempts'))
+                QMessageBox.critical(self, t('access_denied'), t('too_many_attempts'))
                 self.reject()
 
     def forgot_password(self):
         if not user_password or not security_questions:
-            QMessageBox.warning(self, "Cannot Reset", "No user key or security questions set.")
+            QMessageBox.warning(self, t('gui_cannot_reset'), t('gui_no_creds'))
             return
 
         question = random.choice(list(security_questions.keys()))
-        answer, ok = QInputDialog.getText(self, "Security Question", t('security_question', question))
+        answer, ok = QInputDialog.getText(self, t('security_question', ""), t('security_question', question))
 
         if ok and answer and answer.strip() == security_questions[question]:
-            new_password, ok = QInputDialog.getText(self, "Reset Key", t('verified_set_new'), QLineEdit.EchoMode.Password)
+            new_password, ok = QInputDialog.getText(self, t('gui_reset_key'), t('verified_set_new'), QLineEdit.EchoMode.Password)
             if ok and new_password:
-                confirm_password, ok = QInputDialog.getText(self, "Confirm Key", t('confirm_new_key'), QLineEdit.EchoMode.Password)
+                confirm_password, ok = QInputDialog.getText(self, t('gui_confirm_key'), t('confirm_new_key'), QLineEdit.EchoMode.Password)
                 if ok and new_password == confirm_password:
                     security.save_credentials(new_password, security_questions)
-                    QMessageBox.information(self, "Success", t('reset_success'))
+                    QMessageBox.information(self, t('success'), t('reset_success'))
                     self.reject()
                 else:
-                    QMessageBox.warning(self, "Error", t('keys_mismatch'))
+                    QMessageBox.warning(self, t('error'), t('keys_mismatch'))
         else:
-            QMessageBox.critical(self, "Failed", t('incorrect_answer'))
+            QMessageBox.critical(self, t('failed'), t('incorrect_answer'))
 
 class MainWindow(QWidget):
     def __init__(self):
@@ -461,11 +461,11 @@ class MainWindow(QWidget):
         hash_layout.addWidget(self.hash_input, 0, 1)
         hash_layout.addWidget(self.hash_browse_button, 0, 2)
         hash_layout.addWidget(self.hash_calc_button, 1, 0, 1, 3)
-        hash_layout.addWidget(QLabel("MD5:"), 2, 0)
+        hash_layout.addWidget(QLabel(t('gui_md5')), 2, 0)
         hash_layout.addWidget(self.hash_md5_out, 2, 1, 1, 2)
-        hash_layout.addWidget(QLabel("SHA1:"), 3, 0)
+        hash_layout.addWidget(QLabel(t('gui_sha1')), 3, 0)
         hash_layout.addWidget(self.hash_sha1_out, 3, 1, 1, 2)
-        hash_layout.addWidget(QLabel("SHA256:"), 4, 0)
+        hash_layout.addWidget(QLabel(t('gui_sha256')), 4, 0)
         hash_layout.addWidget(self.hash_sha256_out, 4, 1, 1, 2)
         tools_tabs.addTab(hash_widget, "Hash")
 
@@ -474,7 +474,7 @@ class MainWindow(QWidget):
         qr_layout = QVBoxLayout(qr_widget)
         self.qr_input = QLineEdit(placeholderText=t('gui_qr_input'))
         self.qr_generate_button = QPushButton(t('gui_qr_gen'))
-        self.qr_image_label = QLabel("QR Code Preview")
+        self.qr_image_label = QLabel(t('gui_qr_preview'))
         self.qr_image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.qr_image_label.setFixedSize(250, 250)
         self.qr_image_label.setStyleSheet("border: 1px solid #ccc; background-color: white;")
@@ -511,9 +511,9 @@ class MainWindow(QWidget):
         self.deepseek_key_input = QLineEdit(echoMode=QLineEdit.EchoMode.Password, text=deepseek_api_key)
         self.gemini_key_input = QLineEdit(echoMode=QLineEdit.EchoMode.Password, text=gemini_api_key)
         self.save_keys_button = QPushButton(t('gui_save_keys'))
-        layout.addWidget(QLabel("DeepSeek Key:"), 1, 0)
+        layout.addWidget(QLabel(t('gui_deepseek_key')), 1, 0)
         layout.addWidget(self.deepseek_key_input, 1, 1)
-        layout.addWidget(QLabel("Gemini Key:"), 2, 0)
+        layout.addWidget(QLabel(t('gui_gemini_key')), 2, 0)
         layout.addWidget(self.gemini_key_input, 2, 1)
         layout.addWidget(self.save_keys_button, 3, 0, 1, 2)
 
@@ -522,7 +522,7 @@ class MainWindow(QWidget):
         layout.addWidget(self.change_password_button, 5, 0, 1, 2)
 
         layout.addWidget(QLabel(t('gui_proxy')), 6, 0, 1, 2)
-        self.proxy_input = QLineEdit(placeholderText="e.g. http://127.0.0.1:7890")
+        self.proxy_input = QLineEdit(placeholderText=t('gui_proxy_placeholder'))
         self.set_proxy_button = QPushButton(t('gui_set_proxy'))
         self.clear_proxy_button = QPushButton(t('gui_clear_proxy'))
         proxy_layout = QHBoxLayout()
@@ -585,7 +585,7 @@ class MainWindow(QWidget):
         new_lang = self.lang_codes[index]
         if new_lang != i18n.current_language:
             i18n.save_language(new_lang)
-            QMessageBox.information(self, "Language Changed", t('gui_restart_msg'))
+            QMessageBox.information(self, t('gui_lang_changed_title'), t('gui_restart_msg'))
 
     def show_about_dialog(self):
         dialog = AboutDialog(self)
@@ -608,14 +608,14 @@ class MainWindow(QWidget):
         api_key = deepseek_api_key if model_info['type'] == 'deepseek' else gemini_api_key
 
         if not api_key:
-            QMessageBox.warning(self, "Missing API Key", t('ai_no_keys'))
+            QMessageBox.warning(self, t('warning'), t('ai_no_keys'))
             return
 
         self.ai_input.clear()
-        self.ai_history.append(f"<b style='color:#00aaff;'>You:</b> {prompt}<br>")
+        self.ai_history.append(f"<b style='color:#00aaff;'>{t('gui_you')}:</b> {prompt}<br>")
         self.ai_history.append(f"<b style='color:#aaff00;'>{selected_model_name}:</b> ")
         self.ai_send_button.setEnabled(False)
-        self.status_bar.setText(f"Requesting {selected_model_name}...")
+        self.status_bar.setText(t('gui_requesting', selected_model_name))
 
         self.ai_worker = AIWorker(prompt, model_info, api_key)
         self.ai_worker.new_token.connect(self._append_ai_token)
@@ -646,26 +646,26 @@ class MainWindow(QWidget):
         file_path = self.crypto_file_path.text()
         password = self.crypto_password.text()
         if not file_path or not password:
-            QMessageBox.warning(self, "Incomplete", "Please select a file and enter a password.")
+            QMessageBox.warning(self, t('warning'), "Please select a file and enter a password.")
             return
 
-        reply = QMessageBox.question(self, "Confirm", "Original file will be deleted. Continue?",
+        reply = QMessageBox.question(self, t('confirm'), t('gui_confirm_delete'),
                                      QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
                                      QMessageBox.StandardButton.No)
 
         if reply == QMessageBox.StandardButton.Yes:
-            self.status_bar.setText(f"{'Encrypting' if mode == 'encrypt' else 'Decrypting'} file...")
+            self.status_bar.setText(t('gui_encrypting') if mode == 'encrypt' else t('gui_decrypting'))
             self.crypto_worker = CryptoWorker(file_path, password, mode)
             self.crypto_worker.finished.connect(self.crypto_finished)
             self.crypto_worker.start()
 
     def crypto_finished(self, success, message):
         if success:
-            QMessageBox.information(self, "Success", message)
+            QMessageBox.information(self, t('success'), message)
             self.crypto_file_path.clear()
             self.crypto_password.clear()
         else:
-            QMessageBox.critical(self, "Failed", message)
+            QMessageBox.critical(self, t('failed'), message)
         self.status_bar.setText(t('gui_ready'))
 
     def browse_hash_file(self):
@@ -684,7 +684,7 @@ class MainWindow(QWidget):
                 self.hash_md5_out.setText(md5.hexdigest())
                 self.hash_sha1_out.setText(sha1.hexdigest())
                 self.hash_sha256_out.setText(sha256.hexdigest())
-            except Exception as e: QMessageBox.critical(self, "Error", f"Read failed: {e}")
+            except Exception as e: QMessageBox.critical(self, t('error'), t('gui_read_failed', e))
         else:
             encoded_text = text.encode('utf-8')
             self.hash_md5_out.setText(hashlib.md5(encoded_text).hexdigest())
@@ -700,17 +700,17 @@ class MainWindow(QWidget):
             qimage = QImage(pil_img.tobytes("raw", "RGBA"), pil_img.size[0], pil_img.size[1], QImage.Format.Format_RGBA8888)
             self.qr_pixmap = QPixmap.fromImage(qimage)
             self.qr_image_label.setPixmap(self.qr_pixmap.scaled(250, 250, Qt.AspectRatioMode.KeepAspectRatio))
-        except Exception as e: QMessageBox.critical(self, "Error", f"QR Generation Failed: {e}")
+        except Exception as e: QMessageBox.critical(self, t('error'), t('gui_qr_fail', e))
 
     def save_qrcode(self):
         if not self.qr_pixmap:
-            QMessageBox.warning(self, "Empty", "Generate a QR code first.")
+            QMessageBox.warning(self, t('empty'), t('gui_gen_qr_first'))
             return
 
-        save_path, _ = QFileDialog.getSaveFileName(self, "Save QR", DOCUMENTS_PATH, "PNG Files (*.png)")
+        save_path, _ = QFileDialog.getSaveFileName(self, t('gui_save_qr_title'), DOCUMENTS_PATH, "PNG Files (*.png)")
         if save_path:
             self.qr_pixmap.save(save_path, "PNG")
-            self.status_bar.setText(f"Saved to {save_path}")
+            self.status_bar.setText(t('qr_saved', save_path))
 
     def generate_passwords(self):
         count = self.pass_count_spin.value()
@@ -720,28 +720,28 @@ class MainWindow(QWidget):
     def save_passwords(self):
         content = self.pass_output.toPlainText()
         if not content:
-            QMessageBox.warning(self, "Empty", "Generate passwords first.")
+            QMessageBox.warning(self, t('empty'), t('gui_gen_pass_first'))
             return
 
-        save_path, _ = QFileDialog.getSaveFileName(self, "Save Passwords", DOCUMENTS_PATH, "Text Files (*.txt)")
+        save_path, _ = QFileDialog.getSaveFileName(self, t('gui_save_pass_title'), DOCUMENTS_PATH, "Text Files (*.txt)")
         if save_path:
             try:
                 with open(save_path, 'w', encoding='utf-8') as f:
                     timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
-                    f.write(f"--- FALCON OS Passwords ---\n")
-                    f.write(f"Time: {timestamp}\n")
+                    f.write(t('gui_pass_header_file') + "\n")
+                    f.write(t('gui_time_file', timestamp) + "\n")
                     f.write("--------------------------------\n\n")
                     f.write(content)
-                self.status_bar.setText(f"Saved to: {save_path}")
+                self.status_bar.setText(t('qr_saved', save_path))
             except Exception as e:
-                QMessageBox.critical(self, "Failed", f"Write error: {e}")
+                QMessageBox.critical(self, t('failed'), t('gui_write_error', e))
 
     def save_api_keys(self):
         global deepseek_api_key, gemini_api_key
         deepseek_api_key = self.deepseek_key_input.text()
         gemini_api_key = self.gemini_key_input.text()
         security.save_api_keys(deepseek_api_key, gemini_api_key)
-        QMessageBox.information(self, "Success", t('saved'))
+        QMessageBox.information(self, t('success'), t('saved'))
 
     def change_password(self):
         dialog = SetPasswordDialog(self)
@@ -754,7 +754,7 @@ class MainWindow(QWidget):
             os.environ['HTTPS_PROXY'] = proxy
             self.status_bar.setText(t('proxy_set', proxy))
         else:
-            QMessageBox.warning(self, "Error", "Proxy address empty.")
+            QMessageBox.warning(self, t('error'), t('gui_proxy_empty'))
 
     def clear_proxy(self):
         os.environ.pop('HTTP_PROXY', None)

@@ -3,6 +3,9 @@
 import time
 import google.generativeai as genai
 from colorama import init, Fore, Style
+from ..core import i18n
+
+t = i18n.t
 
 # Initialize colorama
 init(autoreset=True)
@@ -16,7 +19,7 @@ def chat_gemini_stream(prompt, model_name, api_key):
     Stream chat with Gemini API.
     """
     if not api_key:
-        print(f"{AI_PREFIX}{Fore.RED}Error: Gemini API key not set. Please use 'setapikey' command.{Style.RESET_ALL}")
+        print(f"{AI_PREFIX}{Fore.RED}{t('ai_gm_error_key')}{Style.RESET_ALL}")
         return
 
     try:
@@ -42,6 +45,6 @@ def chat_gemini_stream(prompt, model_name, api_key):
         print()  # Newline after completion
 
     except Exception as e:
-        print(f"\n{Fore.RED}Error communicating with Gemini API: {e}{Style.RESET_ALL}")
+        print(f"\n{Fore.RED}{t('ai_gm_comm_error', e)}{Style.RESET_ALL}")
         print(
-            f"{Fore.YELLOW}Please check your API key, network connection, or if model '{model_name}' is available.{Style.RESET_ALL}")
+            f"{Fore.YELLOW}{t('ai_gm_check', model_name)}{Style.RESET_ALL}")

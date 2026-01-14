@@ -1,4 +1,4 @@
-# FALCON OS: 您的安全命令行与图形界面伴侣
+# FALCON OS: 安全命令行与图形界面工具箱
 
 [English](README.md) | [简体中文](README_ZH.md)
 
@@ -51,18 +51,11 @@ FALCON OS 是一款功能强大、注重安全的多平台应用程序，它提�
    ```
 2. **打包 CLI**:
    ```bash
-   pyinstaller --onefile --name FALCON_CLI \
-     --hidden-import=pycaw --hidden-import=google.generativeai \
-     --add-data "resources:resources" \
-     run_cli.py
+   pyinstaller --onefile --name FALCON_CLI --hidden-import=pycaw --hidden-import=google.generativeai --add-data "resources:resources" run_cli.py
    ```
 3. **打包 GUI**:
    ```bash
-   pyinstaller --onefile --windowed --name FALCON_GUI \
-     --icon="resources/favicon.ico" \
-     --hidden-import=pycaw --hidden-import=google.generativeai \
-     --add-data "resources:resources" \
-     run_gui.py
+   pyinstaller --onefile --windowed --name FALCON_GUI --icon="resources/favicon.ico" --hidden-import=pycaw --hidden-import=google.generativeai --add-data "resources:resources" run_gui.py
    ```
 
 ## 📖 使用指南

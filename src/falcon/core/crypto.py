@@ -3,6 +3,10 @@ import os
 from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from . import i18n
+
+t = i18n.t
+
 
 def generate_key_from_password(password: str, salt: bytes) -> bytes:
     """Generates a key from a password and salt."""
@@ -15,16 +19,27 @@ def generate_key_from_password(password: str, salt: bytes) -> bytes:
     key = base64.urlsafe_b64encode(kdf.derive(password.encode()))
     return key
 
+
 def encrypt_file_aes(file_path: str, password: str):
     """Encrypts a file and deletes the original."""
     try:
-        if not os.path.exists(file_path):
-            print(f"Error: File '{file_path}' not found.")
+        # Check for empty path
+        if not file_path:
+            print(t('crypto_file_not_found', "Empty Path"))
             return False
 
-        confirm = input(f"Warning: Encryption will delete source file '{os.path.basename(file_path)}'. Continue? (y/n): ").lower()
+        if not os.path.exists(file_path):
+            print(t('crypto_file_not_found', file_path))
+            return False
+
+        # Security Check: Ensure path is a file, not a directory
+        if not os.path.isfile(file_path):
+            print(t('encryption_error', f"Path is not a file: {file_path}"))
+            return False
+
+        confirm = input(t('crypto_encrypt_warning', os.path.basename(file_path))).lower()
         if confirm != 'y':
-            print("Operation canceled.")
+            print(t('operation_canceled'))
             return False
 
         salt = os.urandom(16)
@@ -42,27 +57,41 @@ def encrypt_file_aes(file_path: str, password: str):
 
         os.remove(file_path)
 
-        print(f"File encrypted to: {encrypted_file_path}")
-        print(f"Source file '{os.path.basename(file_path)}' deleted.")
+        print(t('file_encrypted_to', encrypted_file_path))
+        print(t('source_deleted', os.path.basename(file_path)))
         return True
     except FileNotFoundError:
-        print(f"Error: File '{file_path}' not found.")
+        print(t('crypto_file_not_found', file_path))
+        return False
+    except OSError as e:
+        # Catches invalid paths, permission errors, etc.
+        print(t('encryption_error', f"System Error: {e}"))
         return False
     except Exception as e:
-        print(f"Encryption error: {e}")
+        print(t('encryption_error', e))
         return False
 
 
 def decrypt_file_aes(file_path: str, password: str):
     """Decrypts a file and deletes the encrypted source."""
     try:
-        if not os.path.exists(file_path):
-            print(f"Error: File '{file_path}' not found.")
+        # Check for empty path
+        if not file_path:
+            print(t('crypto_file_not_found', "Empty Path"))
             return False
 
-        confirm = input(f"Warning: Decryption will delete encrypted file '{os.path.basename(file_path)}'. Continue? (y/n): ").lower()
+        if not os.path.exists(file_path):
+            print(t('crypto_file_not_found', file_path))
+            return False
+
+        # Security Check: Ensure path is a file, not a directory
+        if not os.path.isfile(file_path):
+            print(t('decryption_error', f"Path is not a file: {file_path}"))
+            return False
+
+        confirm = input(t('crypto_decrypt_warning', os.path.basename(file_path))).lower()
         if confirm != 'y':
-            print("Operation canceled.")
+            print(t('operation_canceled'))
             return False
 
         with open(file_path, 'rb') as encrypted_file:
@@ -82,12 +111,16 @@ def decrypt_file_aes(file_path: str, password: str):
 
         os.remove(file_path)
 
-        print(f"File decrypted to: {original_file_path}")
-        print(f"Encrypted file '{os.path.basename(file_path)}' deleted.")
+        print(t('file_decrypted_to', original_file_path))
+        print(t('encrypted_deleted', os.path.basename(file_path)))
         return True
     except FileNotFoundError:
-        print(f"Error: File '{file_path}' not found.")
+        print(t('crypto_file_not_found', file_path))
+        return False
+    except OSError as e:
+        # Catches invalid paths, permission errors, etc.
+        print(t('decryption_error', f"System Error: {e}"))
         return False
     except Exception as e:
-        print(f"Decryption error: {e}")
+        print(t('decryption_error', e))
         return False

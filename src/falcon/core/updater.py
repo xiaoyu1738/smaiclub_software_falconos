@@ -4,9 +4,12 @@ import os
 import sys
 import subprocess
 from tqdm import tqdm
+from . import i18n
+
 try:
     from PyQt6.QtWidgets import QMessageBox, QProgressDialog
     from PyQt6.QtCore import Qt
+
     HAS_QT = True
 except ImportError:
     HAS_QT = False
@@ -16,25 +19,36 @@ REPO_OWNER = "xiaoyu1738"
 REPO_NAME = "smaiclub_software_falconos"
 API_URL = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/releases/latest"
 
+t = i18n.t
+
+
 def _parse_version(version_str):
     """
     Robustly parses version string, ignoring non-digit suffixes.
     '2.5.0 GUI' -> (2, 5, 0)
     """
+    if not version_str:
+        return (0, 0, 0)
     clean_version_str = "".join(filter(lambda x: x.isdigit() or x == '.', version_str.split()[0]))
     try:
         return tuple(map(int, clean_version_str.split('.')))
     except (ValueError, IndexError):
         return (0, 0, 0)
 
+
 def _apply_update_and_restart(new_exe_path):
     """Creates and executes a batch script to replace old file and restart (Windows only)."""
     if os.name != 'nt':
-        print("Auto-update only supported on Windows. Please replace files manually.")
+        print(t('update_win_only'))
         return
 
-    current_exe_path = sys.executable
-    batch_script = f"""
+    if not os.path.exists(new_exe_path):
+        print(f"Error: New executable not found at {new_exe_path}")
+        return
+
+    try:
+        current_exe_path = sys.executable
+        batch_script = f"""
 @echo off
 echo Updating FALCON OS... Please wait.
 timeout /t 3 /nobreak > NUL
@@ -44,26 +58,45 @@ echo Old version removed. Starting new version...
 start "" "{new_exe_path}"
 (goto) 2>nul & del "%~f0"
 """
-    updater_path = os.path.join(os.getcwd(), "updater.bat")
-    with open(updater_path, "w") as f:
-        f.write(batch_script)
+        updater_path = os.path.join(os.getcwd(), "updater.bat")
+        with open(updater_path, "w") as f:
+            f.write(batch_script)
 
-    subprocess.Popen(updater_path, shell=True, creationflags=subprocess.CREATE_NEW_CONSOLE)
-    sys.exit()
+        subprocess.Popen(updater_path, shell=True, creationflags=subprocess.CREATE_NEW_CONSOLE)
+        sys.exit()
+    except OSError as e:
+        print(t('update_unknown_error_msg', f"Script creation failed: {e}"))
+        if HAS_QT:  # Can't refer to parent_widget easily here, just log to console
+            pass
+
 
 def download_asset(asset_data, parent_widget=None):
     """Downloads the specified asset file."""
+    if not asset_data:
+        return None
+
     download_url = asset_data.get("browser_download_url")
     filename = asset_data.get("name")
 
+    # Security: Sanitize filename to prevent path traversal
+    filename = os.path.basename(filename)
+
+    if not download_url or not filename:
+        return None
+
     try:
-        print(f"Downloading: {filename}...")
-        response = requests.get(download_url, stream=True, timeout=10)
+        print(t('update_downloading', filename))
+        response = requests.get(download_url, stream=True, timeout=15)  # Increased timeout
         response.raise_for_status()
         total_size = int(response.headers.get('content-length', 0))
 
+        # Check write permissions
+        if not os.access(os.getcwd(), os.W_OK):
+            raise PermissionError("Current directory is not writable.")
+
         if parent_widget and HAS_QT:  # GUI mode
-            progress_dialog = QProgressDialog(f"Downloading {filename}...", "Cancel", 0, total_size, parent_widget)
+            progress_dialog = QProgressDialog(t('update_downloading', filename), t('cancel'), 0, total_size,
+                                              parent_widget)
             progress_dialog.setWindowModality(Qt.WindowModality.WindowModal)
             progress_dialog.setValue(0)
 
@@ -71,6 +104,8 @@ def download_asset(asset_data, parent_widget=None):
                 downloaded_size = 0
                 for chunk in response.iter_content(chunk_size=8192):
                     if progress_dialog.wasCanceled():
+                        f.close()
+                        os.remove(filename)  # Clean up partial file
                         return None
                     f.write(chunk)
                     downloaded_size += len(chunk)
@@ -79,7 +114,8 @@ def download_asset(asset_data, parent_widget=None):
 
         else:  # CLI mode
             with open(filename, 'wb') as f, tqdm(
-                    desc=f"Downloading", total=total_size, unit='B',
+                    desc=t('update_downloading', ""),
+                    total=total_size, unit='B',
                     unit_scale=True, unit_divisor=1024
             ) as bar:
                 for chunk in response.iter_content(chunk_size=8192):
@@ -90,8 +126,9 @@ def download_asset(asset_data, parent_widget=None):
     except Exception as e:
         print(f"Download error: {e}")
         if parent_widget and HAS_QT:
-            QMessageBox.critical(parent_widget, "Download Error", f"Error downloading update: {e}")
+            QMessageBox.critical(parent_widget, t('update_error_title'), t('update_error_msg', e))
         return None
+
 
 def check_for_updates(current_version, target_asset_keyword, parent_widget=None, silent=False):
     """
@@ -99,9 +136,9 @@ def check_for_updates(current_version, target_asset_keyword, parent_widget=None,
     """
     if not silent:
         if parent_widget and HAS_QT:
-            QMessageBox.information(parent_widget, "Check for Updates", "Connecting to GitHub...")
+            QMessageBox.information(parent_widget, t('update_check_title'), t('update_connecting'))
         else:
-            print("Connecting to GitHub to check for updates...")
+            print(t('update_connecting'))
 
     try:
         response = requests.get(API_URL, timeout=10)
@@ -114,15 +151,10 @@ def check_for_updates(current_version, target_asset_keyword, parent_widget=None,
         latest_version_tuple = _parse_version(latest_version_str)
 
         if latest_version_tuple > current_version_tuple:
-            message = (
-                f"New version found!\n\n"
-                f"Current: {current_version}\n"
-                f"Latest: {latest_version_str}\n\n"
-                f"Download and update now?"
-            )
+            message = t('update_found_msg', current_version, latest_version_str)
 
             if parent_widget and HAS_QT:
-                reply = QMessageBox.question(parent_widget, "New Version Found", message,
+                reply = QMessageBox.question(parent_widget, t('update_found_title'), message,
                                              QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
                 if reply == QMessageBox.StandardButton.Yes:
                     asset_to_download = next((asset for asset in latest_release.get("assets", [])
@@ -132,12 +164,13 @@ def check_for_updates(current_version, target_asset_keyword, parent_widget=None,
                         if new_exe_path:
                             _apply_update_and_restart(new_exe_path)
                     else:
-                        QMessageBox.warning(parent_widget, "Error", f"Asset containing '{target_asset_keyword}' not found.")
-            else: # CLI Mode
-                print("\n" + "="*60)
-                print(f"New version found! (Current: {current_version}, Latest: {latest_version_str})")
-                print("="*60 + "\n")
-                choice = input("Download and update now? (y/n): ").lower()
+                        QMessageBox.warning(parent_widget, t('error'),
+                                            t('update_asset_not_found', target_asset_keyword))
+            else:  # CLI Mode
+                print("\n" + "=" * 60)
+                print(message)
+                print("=" * 60 + "\n")
+                choice = input(t('update_found_title') + " (y/n): ").lower()
                 if choice == 'y':
                     asset_to_download = next((asset for asset in latest_release.get("assets", [])
                                               if target_asset_keyword in asset.get("name", "").lower()), None)
@@ -146,25 +179,26 @@ def check_for_updates(current_version, target_asset_keyword, parent_widget=None,
                         if new_exe_path:
                             _apply_update_and_restart(new_exe_path)
                     else:
-                        print(f"Error: Asset containing '{target_asset_keyword}' not found.")
+                        print(t('update_asset_not_found', target_asset_keyword))
         else:
             if not silent:
                 if parent_widget and HAS_QT:
-                    QMessageBox.information(parent_widget, "Up to Date", f"You are using the latest version ({current_version}).")
+                    QMessageBox.information(parent_widget, t('update_up_to_date_title'),
+                                            t('update_up_to_date_msg', current_version))
                 else:
-                    print("You are using the latest version.")
+                    print(t('update_up_to_date_msg', current_version))
 
     except requests.exceptions.RequestException as e:
         if not silent:
-            error_message = f"Update check failed: Connection error.\n\nError: {e}"
+            error_message = t('update_net_error_msg', e)
             if parent_widget and HAS_QT:
-                QMessageBox.warning(parent_widget, "Network Error", error_message)
+                QMessageBox.warning(parent_widget, t('update_net_error_title'), error_message)
             else:
                 print(error_message)
     except Exception as e:
         if not silent:
-            error_message = f"Unknown error during update check: {e}"
+            error_message = t('update_unknown_error_msg', e)
             if parent_widget and HAS_QT:
-                QMessageBox.critical(parent_widget, "Update Error", error_message)
+                QMessageBox.critical(parent_widget, t('update_unknown_error_title'), error_message)
             else:
                 print(error_message)

@@ -33,16 +33,19 @@ gemini_api_key = None
 user_password = None
 security_questions = None
 
+
 def load_all_data():
     """Load all encrypted data."""
     global deepseek_api_key, gemini_api_key, user_password, security_questions
     deepseek_api_key, gemini_api_key = security.load_api_keys()
     user_password, security_questions = security.load_credentials()
 
+
 def check_for_updates_automatic():
     """Check for updates on startup."""
     print(f"{t('sys_header')}{t('checking_updates')}")
     updater.check_for_updates(CURRENT_VERSION, "falcon_cli", parent_widget=None, silent=True)
+
 
 def authentication_sequence():
     """Handles user login."""
@@ -96,12 +99,13 @@ def authentication_sequence():
 
     sys.exit(0)
 
+
 def startup_animation():
     ui.show_progress_bar_type1(t('cli_connecting'), 0.01)
     print("")
     ui.show_progress_bar_type1(t('cli_sending_req'), 0.001)
     print("")
-    for i in range(1, 15): # Reduced count for brevity
+    for i in range(1, 15):  # Reduced count for brevity
         ui.show_progress_bar_type1(t('cli_starting_core', i), 0.001)
         print("")
 
@@ -123,6 +127,7 @@ def startup_animation():
     print(f"{t('sys_header')}{t('system_online')}")
     print("================================================================================")
     print(f"{t('cmd_header')}{t('cli_online')}")
+
 
 def main_loop():
     global user_password, security_questions, deepseek_api_key, gemini_api_key, current_proxy
@@ -160,28 +165,28 @@ def main_loop():
             sys.exit(0)
 
         elif cmd == "info":
-            print(f"FALCON OS v{CURRENT_VERSION}")
-            print("Copyright (c) 2025 SMAICLUB Software")
-            print("https://github.com/xiaoyu1738/smaiclub_software_falconos")
+            print(t('cli_info_header', CURRENT_VERSION))
+            print(t('cli_copyright'))
+            print(t('cli_repo'))
 
         elif cmd == "update":
             updater.check_for_updates(CURRENT_VERSION, "falcon_cli", parent_widget=None)
 
         elif cmd == "time":
-             print(t('time_header'), time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()))
+            print(t('time_header'), time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()))
 
         elif cmd == "sysinfo":
             print(t('device_info'))
-            print("Core: Quantum Neural Net v2.86")
-            print("Processor: Photonic Array v5.69")
-            print("Memory: 42PB @ 9877654232MHz")
-            print("Storage: 1.685672YB Quantum Crystal")
-            print("Network: Global Quantum Backbone")
-            print("Security Level: 114514")
+            print(t('sys_core'))
+            print(t('sys_processor'))
+            print(t('sys_memory'))
+            print(t('sys_storage'))
+            print(t('sys_network'))
+            print(t('sys_security'))
 
         elif cmd == "diag":
-            ui.show_progress_bar_type2("Checking Core Status ", 0.5)
-            ui.show_progress_bar_type2("Checking System Status ", 0.1)
+            ui.show_progress_bar_type2(t('checking_core_status'), 0.5)
+            ui.show_progress_bar_type2(t('checking_sys_status'), 0.1)
             print(t('core_status'))
             print(t('sys_status'))
 
@@ -223,9 +228,9 @@ def main_loop():
                 save_path = os.path.join(DOCUMENTS_PATH, filename)
                 try:
                     with open(save_path, 'w', encoding='utf-8') as f:
-                         f.write(f"--- FALCON OS Passwords ---\n")
-                         for p in passwords:
-                             f.write(p + '\n')
+                        f.write(t('gui_pass_header_file') + "\n")
+                        for p in passwords:
+                            f.write(p + '\n')
                     print(f"{t('sys_header')}{Fore.GREEN}{t('saved_to', os.path.abspath(save_path))}{Style.RESET_ALL}")
                 except Exception as e:
                     print(f"{t('sys_header')}{Fore.RED}{t('error_saving', e)}{Style.RESET_ALL}")
@@ -237,28 +242,30 @@ def main_loop():
                 disk = psutil.disk_usage('/')
                 print(f"\n{t('monitor_header')}")
                 print(f"{Fore.CYAN}{t('monitor_cpu', cpu_percent)}{Style.RESET_ALL}")
-                print(f"{Fore.GREEN}{t('monitor_ram', memory.used / (1024**3), memory.total / (1024**3))}{Style.RESET_ALL}")
-                print(f"{Fore.YELLOW}{t('monitor_disk', disk.used / (1024**3), disk.total / (1024**3))}{Style.RESET_ALL}")
+                print(
+                    f"{Fore.GREEN}{t('monitor_ram', memory.used / (1024 ** 3), memory.total / (1024 ** 3))}{Style.RESET_ALL}")
+                print(
+                    f"{Fore.YELLOW}{t('monitor_disk', disk.used / (1024 ** 3), disk.total / (1024 ** 3))}{Style.RESET_ALL}")
                 print("----------------\n")
             except Exception as e:
-                 print(f"{t('sys_header')}{Fore.RED}Monitor Error: {e}{Style.RESET_ALL}")
+                print(f"{t('sys_header')}{Fore.RED}{t('monitor_error', e)}{Style.RESET_ALL}")
 
         elif cmd == "hash":
             print(t('hash_menu'))
             choice = input(f"{t('cmd_header')}{t('choice')}")
             if choice == '1':
                 text = input(f"{t('cmd_header')}{t('text_input')}").encode('utf-8')
-                print(f"MD5: {hashlib.md5(text).hexdigest()}")
-                print(f"SHA1: {hashlib.sha1(text).hexdigest()}")
-                print(f"SHA256: {hashlib.sha256(text).hexdigest()}")
+                print(t('md5_output', hashlib.md5(text).hexdigest()))
+                print(t('sha1_output', hashlib.sha1(text).hexdigest()))
+                print(t('sha256_output', hashlib.sha256(text).hexdigest()))
             elif choice == '2':
                 path = input(f"{t('cmd_header')}{t('file_path')}")
                 if os.path.exists(path):
-                     with open(path, 'rb') as f:
+                    with open(path, 'rb') as f:
                         data = f.read()
-                        print(f"MD5: {hashlib.md5(data).hexdigest()}")
-                        print(f"SHA1: {hashlib.sha1(data).hexdigest()}")
-                        print(f"SHA256: {hashlib.sha256(data).hexdigest()}")
+                        print(t('md5_output', hashlib.md5(data).hexdigest()))
+                        print(t('sha1_output', hashlib.sha1(data).hexdigest()))
+                        print(t('sha256_output', hashlib.sha256(data).hexdigest()))
                 else:
                     print(t('file_not_found'))
 
@@ -277,7 +284,7 @@ def main_loop():
                 if not fname.endswith('.png'): fname += '.png'
                 path = os.path.join(DOCUMENTS_PATH, fname)
                 qrcode.make(data).save(path)
-                print(f"Saved to {path}")
+                print(t('qr_saved', path))
 
         elif cmd == "RC4":
             print(t('rc4_menu'))
@@ -292,36 +299,36 @@ def main_loop():
                 print(t('result', security.rc4_decrypt_command(d, k)))
 
         elif cmd == "crypto":
-             print(t('crypto_menu'))
-             c = input(f"{t('cmd_header')}{t('choice')}")
-             path = input(t('file_path'))
-             pwd = input(t('password_input'))
-             if c == '1':
-                 crypto.encrypt_file_aes(path, pwd)
-             elif c == '2':
-                 crypto.decrypt_file_aes(path, pwd)
+            print(t('crypto_menu'))
+            c = input(f"{t('cmd_header')}{t('choice')}")
+            path = input(t('file_path'))
+            pwd = input(t('password_input'))
+            if c == '1':
+                crypto.encrypt_file_aes(path, pwd)
+            elif c == '2':
+                crypto.decrypt_file_aes(path, pwd)
 
         elif cmd == "setpassword":
-             print(f"{t('sys_header')}{t('set_new_key_header')}")
-             old = input(f"{t('auth_header')}{t('current_key')}")
-             if old != (user_password if user_password else "114514"):
-                 print(t('invalid_key', 0))
-                 continue
+            print(f"{t('sys_header')}{t('set_new_key_header')}")
+            old = input(f"{t('auth_header')}{t('current_key')}")
+            if old != (user_password if user_password else "114514"):
+                print(t('invalid_key', 0))
+                continue
 
-             new_p = input(t('enter_new_key'))
-             if not new_p: continue
+            new_p = input(t('enter_new_key'))
+            if not new_p: continue
 
-             print(t('set_sq_header'))
-             qs = {}
-             for i in range(3):
-                 q = input(t('question_n', i+1))
-                 a = input(t('answer_input'))
-                 qs[q] = a
+            print(t('set_sq_header'))
+            qs = {}
+            for i in range(3):
+                q = input(t('question_n', i + 1))
+                a = input(t('answer_input'))
+                qs[q] = a
 
-             security.save_credentials(new_p, qs)
-             user_password = new_p
-             security_questions = qs
-             print(t('saved'))
+            security.save_credentials(new_p, qs)
+            user_password = new_p
+            security_questions = qs
+            print(t('saved'))
 
         elif cmd == "setapikey":
             print(f"{t('sys_header')}{t('set_api_header')}")
@@ -337,72 +344,67 @@ def main_loop():
             print(t('saved'))
 
         elif cmd.startswith("proxy"):
-             parts = cmd.split()
-             if len(parts) == 1:
-                 print(t('proxy_current', current_proxy))
-             elif parts[1] == "clear":
-                 os.environ.pop('HTTP_PROXY', None)
-                 os.environ.pop('HTTPS_PROXY', None)
-                 current_proxy = "None"
-                 print(t('proxy_cleared'))
-             elif parts[1] == "help":
-                 print(t('proxy_help'))
-             else:
-                 p = parts[1]
-                 os.environ['HTTP_PROXY'] = p
-                 os.environ['HTTPS_PROXY'] = p
-                 current_proxy = p
-                 print(t('proxy_set', p))
+            parts = cmd.split()
+            if len(parts) == 1:
+                print(t('proxy_current', current_proxy))
+            elif parts[1] == "clear":
+                os.environ.pop('HTTP_PROXY', None)
+                os.environ.pop('HTTPS_PROXY', None)
+                current_proxy = "None"
+                print(t('proxy_cleared'))
+            elif parts[1] == "help":
+                print(t('proxy_help'))
+            else:
+                p = parts[1]
+                os.environ['HTTP_PROXY'] = p
+                os.environ['HTTPS_PROXY'] = p
+                current_proxy = p
+                print(t('proxy_set', p))
 
         elif cmd == "ai":
-             if not deepseek_api_key and not gemini_api_key:
-                 print(t('ai_no_keys'))
-                 continue
-             print(t('ai_menu'))
-             c = input(t('choice'))
-             if c == '1':
-                 if not deepseek_api_key:
-                     print(t('ai_ds_missing'))
-                     continue
-                 print(t('ai_ds_start'))
-                 while True:
-                     p = input(f"{Fore.BLUE}AI(DeepSeek)>>>>>> {Style.RESET_ALL}")
-                     if p == 'aiquit': break
-                     deepseek.chat_deepseek_stream(p, deepseek_api_key)
-             elif c == '2':
-                 if not gemini_api_key:
-                     print(t('ai_gm_missing'))
-                     continue
-                 print(t('ai_gm_start'))
-                 while True:
-                     p = input(f"{Fore.GREEN}AI(Gemini)>>>>>> {Style.RESET_ALL}")
-                     if p == 'aiquit': break
-                     gemini.chat_gemini_stream(p, "gemini-pro", gemini_api_key)
+            if not deepseek_api_key and not gemini_api_key:
+                print(t('ai_no_keys'))
+                continue
+            print(t('ai_menu'))
+            c = input(t('choice'))
+            if c == '1':
+                if not deepseek_api_key:
+                    print(t('ai_ds_missing'))
+                    continue
+                print(t('ai_ds_start'))
+                while True:
+                    p = input(f"{Fore.BLUE}AI(DeepSeek)>>>>>> {Style.RESET_ALL}")
+                    if p == 'aiquit': break
+                    deepseek.chat_deepseek_stream(p, deepseek_api_key)
+            elif c == '2':
+                if not gemini_api_key:
+                    print(t('ai_gm_missing'))
+                    continue
+                print(t('ai_gm_start'))
+                while True:
+                    p = input(f"{Fore.GREEN}AI(Gemini)>>>>>> {Style.RESET_ALL}")
+                    if p == 'aiquit': break
+                    gemini.chat_gemini_stream(p, "gemini-pro", gemini_api_key)
 
         elif cmd == "setlang":
             print(t('select_lang'))
-            print("1. English")
-            print("2. 简体中文")
-            print("3. 繁體中文")
-            print("4. Español")
-            print("5. Français")
-            print("6. Deutsch")
-            print("7. 日本語")
-            print("8. Русский")
+            idx_map = {}
+            i = 1
+            for code, name in i18n.LANGUAGES.items():
+                print(f"{i}. {name}")
+                idx_map[str(i)] = code
+                i += 1
 
-            lang_map = {
-                "1": "en", "2": "zh-CN", "3": "zh-TW", "4": "es",
-                "5": "fr", "6": "de", "7": "ja", "8": "ru"
-            }
             c = input(t('choice'))
-            if c in lang_map:
-                i18n.save_language(lang_map[c])
-                print(t('lang_set', i18n.LANGUAGES[lang_map[c]]))
+            if c in idx_map:
+                i18n.save_language(idx_map[c])
+                print(t('lang_set', i18n.LANGUAGES[idx_map[c]]))
             else:
-                print("Invalid choice.")
+                print(t('invalid_choice'))
 
         else:
             print(t('unknown_cmd', cmd))
+
 
 def run():
     load_all_data()
@@ -411,6 +413,7 @@ def run():
     check_for_updates_automatic()
     startup_animation()
     main_loop()
+
 
 if __name__ == "__main__":
     run()

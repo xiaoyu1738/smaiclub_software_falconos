@@ -16,28 +16,56 @@ else:
     IAudioEndpointVolume = None
     CLSCTX_ALL = None
 
+
 def generate_random_passwords(count):
     """
     Generate a specified number of random passwords.
     Returns a list of passwords.
     """
-    passwords = []
-    # To maintain similar output volume to old behavior, generate count * 5
-    total_passwords = count * 5
-    if total_passwords == 0:
+    # Security: Validate count to prevent DoS (Memory exhaustion)
+    try:
+        count = int(count)
+    except (ValueError, TypeError):
         return []
 
-    for _ in range(total_passwords):
-        random_int = random.randint(0, 16 ** 16 - 1)
-        passwords.append(f'{random_int:016x}')
+    if count < 1:
+        return []
+
+    # Cap the maximum number of passwords to prevent freezing
+    MAX_PASSWORDS = 10000
+    if count > MAX_PASSWORDS:
+        count = MAX_PASSWORDS
+
+    passwords = []
+    # To maintain similar output volume to old behavior, generate count * 5
+    # Limit total generation as well
+    total_passwords = count * 5
+
+    try:
+        for _ in range(total_passwords):
+            random_int = random.randint(0, 16 ** 16 - 1)
+            passwords.append(f'{random_int:016x}')
+    except Exception as e:
+        print(f"Error generating passwords: {e}")
+        return []
+
     return passwords
 
+
 def open_club_website():
-    webbrowser.open("https://www.smaiclub.top")
+    try:
+        webbrowser.open("https://www.smaiclub.top")
+    except Exception as e:
+        print(f"Failed to open website: {e}")
+
 
 def open_easter_egg_videos():
-    webbrowser.open("https://www.bilibili.com/video/BV1V94y1K7GK/")
-    webbrowser.open("https://www.bilibili.com/video/BV1GJ411x7h7/")
+    try:
+        webbrowser.open("https://www.bilibili.com/video/BV1V94y1K7GK/")
+        webbrowser.open("https://www.bilibili.com/video/BV1GJ411x7h7/")
+    except Exception as e:
+        print(f"Failed to open video: {e}")
+
 
 def set_system_volume_max():
     """
@@ -58,6 +86,6 @@ def set_system_volume_max():
             volume.SetMute(0, None)
             print("Volume set to 100%.")
         else:
-             print("Audio utilities not available.")
+            print("Audio utilities not available.")
     except Exception as e:
         print(f"Failed to set volume: {e}")
