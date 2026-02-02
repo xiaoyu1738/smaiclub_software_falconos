@@ -19,3 +19,7 @@ coverage.xml
 .mypy_cache
 .pytest_cache
 .idea
+build/*
+dist/*
+FALCON_CLI.spec
+FALCON_GUI.spec
